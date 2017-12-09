@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         final Button mateuszButton = (Button) findViewById(R.id.mateuszButton);
         mateuszButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MateuszActivity.class));
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
             }
         });
     }
