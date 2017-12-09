@@ -1,5 +1,6 @@
 package com.example.mateusz.citytourapp;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +19,13 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 testRest();
+            }
+        });
+
+        final Button mateuszButton = (Button) findViewById(R.id.mateuszButton);
+        mateuszButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MateuszActivity.class));
             }
         });
     }
