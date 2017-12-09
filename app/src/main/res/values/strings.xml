@@ -1,3 +1,5 @@
 <resources>
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">OFuY1RNt09tnLwY8IrIubHsGj</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">LnwkYwPdKmmNPzkOS1ZuqDdamH0wRVGKTDdEfmhXsDToBfNIth</string>
     <string name="app_name">CityTourApp</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.mateusz.citytourapp;
+package com.example.mateusz.citytourapp.rest;
 
 import android.content.Context;
 import android.util.Log;
