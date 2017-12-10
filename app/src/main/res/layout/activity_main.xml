@@ -21,10 +21,19 @@
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="108dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        tools:layout_editor_absoluteX="84dp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:text="Tweet"
+        app:layout_constraintBottom_toTopOf="@+id/login_button"
         app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="84dp" />
+        tools:layout_editor_absoluteX="147dp" />
 
 </android.support.constraint.ConstraintLayout>
