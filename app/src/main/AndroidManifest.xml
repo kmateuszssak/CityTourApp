@@ -21,7 +21,7 @@
         </activity>
 
         <receiver
-            android:name=".tweeter.MyResultReceiver"
+            android:name=".tweeter.LoginResultReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.twitter.sdk.android.tweetcomposer.UPLOAD_SUCCESS"/>

@@ -11,17 +11,17 @@ import com.twitter.sdk.android.tweetcomposer.TweetUploadService;
  * Created by Luki on 2017-12-09.
  */
 
-public class MyResultReceiver extends BroadcastReceiver {
+public class LoginResultReceiver extends BroadcastReceiver {
     @Override
-    public void onReceive(Context context, Intent intent) {
-        if (TweetUploadService.UPLOAD_SUCCESS.equals(intent.getAction())) {
-            Log.d("MyResultReceiver", "Sukces");
+    public void onReceive(Context aContext, Intent aIntent) {
+        if (TweetUploadService.UPLOAD_SUCCESS.equals(aIntent.getAction())) {
+            Log.d("LoginResultReceiver", "Sukces");
             //final Long tweetId = intentExtras.getLong(TweetUploadService.EXTRA_TWEET_ID);
-        } else if (TweetUploadService.UPLOAD_FAILURE.equals(intent.getAction())) {
-            Log.d("MyResultReceiver", "Failure");
+        } else if (TweetUploadService.UPLOAD_FAILURE.equals(aIntent.getAction())) {
+            Log.d("LoginResultReceiver", "Failure");
             //final Intent retryIntent = intentExtras.getParcelable(TweetUploadService.EXTRA_RETRY_INTENT);
-        } else if (TweetUploadService.TWEET_COMPOSE_CANCEL.equals(intent.getAction())) {
-            Log.d("MyResultReceiver", "Compose cancel");
+        } else if (TweetUploadService.TWEET_COMPOSE_CANCEL.equals(aIntent.getAction())) {
+            Log.d("LoginResultReceiver", "Compose cancel");
             // cancel
         }
     }
