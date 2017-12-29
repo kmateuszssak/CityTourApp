@@ -4,6 +4,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,20 +44,17 @@ public class MainActivity extends AppCompatActivity {
 
         final Button aButton = (Button) findViewById(R.id.button);
         aButton.setOnClickListener(new View.OnClickListener() {
-        //Inicjalizacja listenera button
-        final Button button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 testRest();
             }
         });
 
-        final Button aButton2 = (Button) findViewById(R.id.button2);
+        /*final Button aButton2 = (Button) findViewById(R.id.button2);
         aButton2.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 m_aTwitterObject.tweet(MainActivity.this, "");
             }
-        });
+        });*/
 
         final Button buttonMaps = (Button) findViewById(R.id.buttonMaps);
         buttonMaps.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
         // Pass the activity result to the login button.
         m_aLoginButton.onActivityResult(requestCode, resultCode, data);
     }
+
+
 
     private void testRest() {
         AsyncTask.execute(new Runnable() {
