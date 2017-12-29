@@ -45,6 +45,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        final Button buttonMaps = (Button) findViewById(R.id.buttonMaps);
+        buttonMaps.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            }
+        });
+
         m_aLoginButton = (TwitterLoginButton) findViewById(R.id.login_button);
         m_aLoginButton.setCallback(new Callback<TwitterSession>() {
             @Override
