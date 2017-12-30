@@ -3,6 +3,7 @@ package com.example.mateusz.citytourapp;
 import android.Manifest;
 import android.app.ActionBar;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -17,8 +18,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -62,6 +66,14 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        final Button checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
+        checkLocalizationButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                OrangeApiService orangeApiService = new OrangeApiService();
+                orangeApiService.getGeoLocation();
+            }
+        });
     }
 
     @Override
