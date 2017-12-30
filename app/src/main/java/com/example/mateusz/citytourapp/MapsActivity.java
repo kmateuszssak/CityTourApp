@@ -1,13 +1,14 @@
 package com.example.mateusz.citytourapp;
 
 import android.Manifest;
-import android.app.ActionBar;
+import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,13 +17,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
+import com.example.mateusz.citytourapp.Model.MonumentsDTO;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
+import com.example.mateusz.citytourapp.Services.PoznanApiService;
+import com.example.mateusz.citytourapp.rest.RestClient;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -70,8 +74,36 @@ public class MapsActivity extends AppCompatActivity
         final Button checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
         checkLocalizationButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                OrangeApiService orangeApiService = new OrangeApiService();
-                orangeApiService.getGeoLocation();
+                AsyncTask.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        PoznanApiService poznanApiService = new PoznanApiService();
+                        MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
+                        OrangeApiService orangeApiService = new OrangeApiService();
+                        LocalizationOrangeDTO localizationOrangeDTO = orangeApiService.getGeoLocalizationOrange();
+                        final Location location = orangeApiService.getGeoLocation();
+
+                        runOnUiThread(new Runnable() {
+                            final Location locationL = location;
+
+                            @Override
+                            public void run() {
+                                onLocationChanged(locationL);
+                                Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        //post()) always puts the Runnable at the end of the event queue
+                        /*new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            final Location locationL = location;
+
+                            public void run() {
+                                onLocationChanged(locationL);
+                                Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
+                            }
+                        });*/
+                    }
+                });
             }
         });
     }
@@ -98,7 +130,7 @@ public class MapsActivity extends AppCompatActivity
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mGoogleMap=googleMap;
+        mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         //Initialize Google Play Services
@@ -113,8 +145,7 @@ public class MapsActivity extends AppCompatActivity
                 //Request Location Permission
                 checkLocationPermission();
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             mGoogleMap.setMyLocationEnabled(true);
         }
@@ -145,7 +176,7 @@ public class MapsActivity extends AppCompatActivity
         mCurrLocationMarker = mGoogleMap.addMarker(markerOptions);
 
         //move map camera
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,11));
+        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11));
     }
 
     @Override
@@ -176,7 +207,7 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
-    LocationCallback mLocationCallback = new LocationCallback(){
+    LocationCallback mLocationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
             for (Location location : locationResult.getLocations()) {
@@ -197,7 +228,9 @@ public class MapsActivity extends AppCompatActivity
                 //move map camera
                 mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 11));
             }
-        };
+        }
+
+        ;
 
     };
 
@@ -212,6 +245,7 @@ public class MapsActivity extends AppCompatActivity
     }
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -232,7 +266,7 @@ public class MapsActivity extends AppCompatActivity
                                 //Prompt the user once explanation has been shown
                                 ActivityCompat.requestPermissions(MapsActivity.this,
                                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                        MY_PERMISSIONS_REQUEST_LOCATION );
+                                        MY_PERMISSIONS_REQUEST_LOCATION);
                             }
                         })
                         .create()
@@ -243,7 +277,7 @@ public class MapsActivity extends AppCompatActivity
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION );
+                        MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
     }
