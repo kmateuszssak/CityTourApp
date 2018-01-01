@@ -13,13 +13,20 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
@@ -43,8 +50,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.LocationRequest;
 
-public class MapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback,
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -57,43 +63,85 @@ public class MapsActivity extends AppCompatActivity
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
 
+    Button checkLocalizationButton;
+    LinearLayout layoutBottomSheet;
+    BottomSheetBehavior sheetBehavior;
+    private NavigationView navigationView;
+    private DrawerLayout drawerLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        getSupportActionBar().setTitle("Map Location Activity");
+        layoutBottomSheet = findViewById(R.id.bottom_sheet);
+        sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                return false;
+            }
+        });
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                // Code here will be triggered once the drawer closes as we dont want anything to happen so we leave this blank
+                super.onDrawerClosed(drawerView);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                // Code here will be triggered once the drawer open as we dont want anything to happen so we leave this blank
+                super.onDrawerOpened(drawerView);
+            }
+        };
+
+        //Setting the actionbarToggle to drawer layout
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+
+        //calling sync state is necessay or else your hamburger icon wont show up
+        actionBarDrawerToggle.syncState();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        final Button checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
-        checkLocalizationButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                AsyncTask.execute(new Runnable() {
+        checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
+    }
+
+    public void onClickCheckLocalizationBtn(View v) {
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                PoznanApiService poznanApiService = new PoznanApiService();
+                MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
+                OrangeApiService orangeApiService = new OrangeApiService();
+                LocalizationOrangeDTO localizationOrangeDTO = orangeApiService.getGeoLocalizationOrange();
+                final Location location = orangeApiService.getGeoLocation();
+
+                runOnUiThread(new Runnable() {
+                    final Location locationL = location;
+
                     @Override
                     public void run() {
-                        PoznanApiService poznanApiService = new PoznanApiService();
-                        MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
-                        OrangeApiService orangeApiService = new OrangeApiService();
-                        LocalizationOrangeDTO localizationOrangeDTO = orangeApiService.getGeoLocalizationOrange();
-                        final Location location = orangeApiService.getGeoLocation();
+                        onLocationChanged(locationL);
+                        Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-                        runOnUiThread(new Runnable() {
-                            final Location locationL = location;
-
-                            @Override
-                            public void run() {
-                                onLocationChanged(locationL);
-                                Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        //post()) always puts the Runnable at the end of the event queue
+                //post()) always puts the Runnable at the end of the event queue
                         /*new Handler(Looper.getMainLooper()).post(new Runnable() {
                             final Location locationL = location;
 
@@ -102,8 +150,6 @@ public class MapsActivity extends AppCompatActivity
                                 Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
                             }
                         });*/
-                    }
-                });
             }
         });
     }

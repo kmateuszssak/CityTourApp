@@ -4,4 +4,33 @@
     <string name="app_name">CityTourApp</string>
     <string name="title_activity_mateusz">MateuszActivity</string>
     <string name="title_activity_maps">Map</string>
+
+
+    <string name="title_activity_login">Logowanie</string>
+    <string name="title_activity_navigation">NavigationActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="pobierz_string">Pobierz zadania</string>
+    <string name="lista_zadan_string">Lista zadań</string>
+    <string name="ustawienia_string">Ustawienia</string>
+    <string name="zobacz_na_mapie_string">Zobacz na mapie</string>
+    <string name="dalej">Dalej</string>
+    <string name="has_o">Hasło</string>
+    <string name="login">Login</string>
+
+    <string name="zadania_string">Zadania</string>
+    <string name="wyswietl_zadanie_string">Wyświetl zadanie</string>
+    <string name="historia_string">Historia</string>
+    <string name="wspolpracownicy_string">Współpracownicy</string>
+    <string name="mapa_string">Mapa</string>
+    <string name="brak_zadan_string">Brak zadań.</string>
+    <string name="zakoncz_zadanie_string">Zakończ zadanie</string>
+    <string name="szybkie_rozwiazanie_string">Szybkie rozwiązanie</string>
+    <string name="edycja_reczna_string">Edycja ręczna</string>
+    <string name="edycja_gps_string">Edycja GPS</string>
+    <string name="rozwiazanie_problemow_string">Rozwiązania problemów</string>
+    <string name="wyloguj_string">Wyloguj</string>
 </resources>
