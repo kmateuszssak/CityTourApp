@@ -1,14 +1,12 @@
 package com.example.mateusz.citytourapp;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,17 +21,23 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
+import com.example.mateusz.citytourapp.Model.Feature;
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
 import com.example.mateusz.citytourapp.Model.MonumentsDTO;
+import com.example.mateusz.citytourapp.Model.Properties;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
-import com.example.mateusz.citytourapp.rest.RestClient;
+import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -50,7 +54,13 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.location.LocationRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleMap.OnMarkerDragListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -63,11 +73,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     Marker mCurrLocationMarker;
     FusedLocationProviderClient mFusedLocationClient;
 
+    private TextView titleBottomSheet;
+    private TextView descriptionBottomSheet;
+    private NetworkImageView mNetworkImageView;
+    private ImageLoader mImageLoader;
+
     Button checkLocalizationButton;
     LinearLayout layoutBottomSheet;
     BottomSheetBehavior sheetBehavior;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
+
+    MonumentsDTO monumentsDTO = null;
+    Map<Marker, Feature> markerFeatureMap = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +97,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         layoutBottomSheet = findViewById(R.id.bottom_sheet);
         sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        navigationView = (NavigationView) findViewById(R.id.navigation_view);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
+        titleBottomSheet = findViewById(R.id.title_bottom_sheet);
+        descriptionBottomSheet = findViewById(R.id.description_bottom_sheet);
+        mNetworkImageView = (NetworkImageView) findViewById(R.id.networkImageView);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        navigationView = (NavigationView) findViewById(R.id.navigation_view);
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -90,8 +114,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.navigation_drawer_open, R.string.navigation_drawer_close){
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 
             @Override
             public void onDrawerClosed(View drawerView) {
@@ -113,18 +136,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         actionBarDrawerToggle.syncState();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        checkLocalizationButton = (Button) findViewById(R.id.checkLocalizationButton);
     }
 
     public void onClickCheckLocalizationBtn(View v) {
-        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
+
+                getMonumentsCloseToLocalization(null);
+
                 PoznanApiService poznanApiService = new PoznanApiService();
                 MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
                 OrangeApiService orangeApiService = new OrangeApiService();
@@ -154,6 +176,48 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    private void setupNetworkImageViewSourceInBottomSheet(String url) {
+        mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext())
+                .getImageLoader();
+
+        mImageLoader.get(url, ImageLoader.getImageListener(mNetworkImageView,
+                R.mipmap.ic_launcher, android.R.drawable //Deafault image
+                        .ic_dialog_alert));//Error image
+        mNetworkImageView.setImageUrl(url, mImageLoader);
+    }
+
+    private void getMonumentsCloseToLocalization(Location location) {
+        final PoznanApiService poznanApiService = new PoznanApiService();
+
+        monumentsDTO = poznanApiService.getMonumentsDTO();
+        markerFeatureMap = new HashMap<>();
+
+        runOnUiThread(new Runnable() {
+            final MonumentsDTO monumentsDTO_UI = monumentsDTO;
+            final PoznanApiService poznanApiService_UI = poznanApiService;
+
+            @Override
+            public void run() {
+                List<MarkerOptions> markerOptionsList = new ArrayList<>();
+                for (Feature feature : monumentsDTO_UI.features) {
+                    //markerOptionsList.add(getMonumentMarker(feature.properties, poznanApiService.parseGeoLocationDTOLatLng(feature.geometry)));
+                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.properties, poznanApiService_UI.parseGeoLocationDTOLatLng(feature.geometry)));
+                    markerFeatureMap.put(marker, feature);
+                }
+            }
+        });
+    }
+
+    private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng) {
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title(properties.nazwa);
+        markerOptions.draggable(true);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+
+        return markerOptions;
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -178,6 +242,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        mGoogleMap.setOnMarkerDragListener(this);
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -361,5 +427,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        Feature feature = markerFeatureMap.get(marker);
+
+        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
+        setupNetworkImageViewSourceInBottomSheet(url);
+
+        titleBottomSheet.setText(feature.properties.nazwa);
+        descriptionBottomSheet.setText(feature.properties.opis);
+
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 }
