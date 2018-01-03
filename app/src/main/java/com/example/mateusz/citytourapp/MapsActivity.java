@@ -38,6 +38,7 @@ import com.example.mateusz.citytourapp.Model.Properties;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
 import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -60,7 +61,9 @@ import java.util.List;
 import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener,
         GoogleMap.OnMarkerDragListener,
+        GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -158,7 +161,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     @Override
                     public void run() {
-                        onLocationChanged(locationL);
+                        //onLocationChanged(locationL);
                         Toast.makeText(getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -244,6 +247,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         mGoogleMap.setOnMarkerDragListener(this);
+        mGoogleMap.setOnMarkerClickListener(this);
+        mGoogleMap.setOnMapClickListener(this);
 
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -441,6 +446,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
         Feature feature = markerFeatureMap.get(marker);
 
         final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
@@ -449,6 +460,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         titleBottomSheet.setText(feature.properties.nazwa);
         descriptionBottomSheet.setText(feature.properties.opis);
 
-        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        synchronized (sheetBehavior) {
+            sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        };
+
+        return false;
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        synchronized (sheetBehavior) {
+            sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        }
     }
 }
