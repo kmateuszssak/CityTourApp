@@ -21,7 +21,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -31,14 +30,14 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
-import com.example.mateusz.citytourapp.Model.Feature;
+import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
-import com.example.mateusz.citytourapp.Model.MonumentsDTO;
-import com.example.mateusz.citytourapp.Model.Properties;
+import com.example.mateusz.citytourapp.Model.poznanModels.MonumentsDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.Properties;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
 import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -68,27 +67,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    GoogleMap mGoogleMap;
-    SupportMapFragment mapFrag;
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
-    FusedLocationProviderClient mFusedLocationClient;
+    private GoogleMap mGoogleMap;
+    private SupportMapFragment mapFrag;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private Marker mCurrLocationMarker;
+    private FusedLocationProviderClient mFusedLocationClient;
 
     private TextView titleBottomSheet;
     private TextView descriptionBottomSheet;
     private NetworkImageView mNetworkImageView;
     private ImageLoader mImageLoader;
 
-    Button checkLocalizationButton;
-    LinearLayout layoutBottomSheet;
-    BottomSheetBehavior sheetBehavior;
+    private Button checkLocalizationButton;
+    private LinearLayout layoutBottomSheet;
+    private BottomSheetBehavior sheetBehavior;
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
 
-    MonumentsDTO monumentsDTO = null;
-    Map<Marker, Feature> markerFeatureMap = null;
+    private MonumentsDTO monumentsDTO = null;
+    private ChurchesDTO churchesDTO = null;
+    private Map<Marker, Feature> markerFeatureMap = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +149,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void run() {
 
                 getMonumentsCloseToLocalization(null);
+                getChurchesCloseToLocalization(null);
 
                 PoznanApiService poznanApiService = new PoznanApiService();
                 MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
@@ -202,21 +203,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void run() {
                 List<MarkerOptions> markerOptionsList = new ArrayList<>();
-                for (Feature feature : monumentsDTO_UI.features) {
+                for (Feature feature : monumentsDTO_UI.getFeatures()) {
                     //markerOptionsList.add(getMonumentMarker(feature.properties, poznanApiService.parseGeoLocationDTOLatLng(feature.geometry)));
-                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.properties, poznanApiService_UI.parseGeoLocationDTOLatLng(feature.geometry)));
+                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 0));
                     markerFeatureMap.put(marker, feature);
                 }
             }
         });
     }
 
-    private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng) {
+    private void getChurchesCloseToLocalization(Location location) {
+        final PoznanApiService poznanApiService = new PoznanApiService();
+
+        churchesDTO = poznanApiService.getChurchesDTO();
+        markerFeatureMap = new HashMap<>();
+
+        runOnUiThread(new Runnable() {
+            final ChurchesDTO churchesDTO_UI = churchesDTO;
+            final PoznanApiService poznanApiService_UI = poznanApiService;
+
+            @Override
+            public void run() {
+                List<MarkerOptions> markerOptionsList = new ArrayList<>();
+                for (Feature feature : churchesDTO_UI.getFeatures()) {
+                    //markerOptionsList.add(getMonumentMarker(feature.properties, poznanApiService.parseGeoLocationDTOLatLng(feature.geometry)));
+                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 1));
+                    markerFeatureMap.put(marker, feature);
+                }
+            }
+        });
+    }
+
+    private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng, int t) {
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-        markerOptions.title(properties.nazwa);
+        markerOptions.title(properties.getNazwa());
         markerOptions.draggable(true);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        switch(t)
+        {
+            case 0: markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                break;
+            case 1: markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                break;
+        }
 
         return markerOptions;
     }
@@ -454,11 +483,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         Feature feature = markerFeatureMap.get(marker);
 
-        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
+        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.getProperties().getGrafika();
         setupNetworkImageViewSourceInBottomSheet(url);
 
-        titleBottomSheet.setText(feature.properties.nazwa);
-        descriptionBottomSheet.setText(feature.properties.opis);
+        titleBottomSheet.setText(feature.getProperties().getNazwa());
+        descriptionBottomSheet.setText(feature.getProperties().getOpis());
 
         synchronized (sheetBehavior) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
