@@ -352,8 +352,6 @@ public class TabMap extends Fragment implements
 
     }
 
-
-
     @Override
     public void onMarkerDragStart(Marker marker) {
 
@@ -373,6 +371,7 @@ public class TabMap extends Fragment implements
     public boolean onMarkerClick(Marker marker) {
 
         Feature feature = markerFeatureMap.get(marker);
+        activity.setSelectedFeature(feature);
 
         final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
         setupNetworkImageViewSourceInBottomSheet(url);

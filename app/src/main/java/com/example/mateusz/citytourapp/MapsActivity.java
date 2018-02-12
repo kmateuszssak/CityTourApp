@@ -17,6 +17,7 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -79,6 +80,10 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+    /**
+     *  Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
+     */
+    private Feature selectedFeature = null;
 
     FirebaseUser user = null;
 
@@ -95,7 +100,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         //Adding the tabs using addTab() method
         tabLayout.addTab(tabLayout.newTab().setText("Mapa"));
         tabLayout.addTab(tabLayout.newTab().setText("Detale"));
-        tabLayout.addTab(tabLayout.newTab().setText("Twitter"));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         //Initializing viewPager
@@ -106,6 +110,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         //Adding adapter to pager
         viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
         //Adding onTabSelectedListener to swipe views
         tabLayout.addOnTabSelectedListener(this);
@@ -133,7 +138,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         drawerLayout.addDrawerListener(actionBarDrawerToggle);
 
         actionBarDrawerToggle.syncState();
-
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         setNavigationHeaderUserData(user);
@@ -173,7 +177,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         TwitterHelper m_aTwitterObject = DataStoreClass.getGlobalTwitterHelper();
         m_aTwitterObject.setM_aSession(twitterSession);
     }
-
 
     private void setupProfileImageInNavigationHeader(String url, NetworkImageView mNetworkImageView) {
         ImageLoader mImageLoader = CustomVolleyRequestQueue.getInstance(getApplicationContext())
@@ -228,6 +231,15 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     }
 
     public void switchTab(int position) {
+
         tabLayout.getTabAt(position).select();
+    }
+
+    public void setSelectedFeature(Feature feature) {
+        selectedFeature = feature;
+    }
+
+    public  Feature getSelectedFeature() {
+        return selectedFeature;
     }
 }

@@ -1,15 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_marginTop="308dp"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MapsActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Tab 2"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/details_selected_item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/image_height_bottom_sheet"
+            android:orientation="horizontal">
 
-</RelativeLayout>
+            <TextView
+                android:id="@+id/title_selected_item"
+                android:background="#129FFF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_toLeftOf="@id/networkImage_selected_item"
+                android:layout_weight="2"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Empty"
+                android:textColor="#444"
+                android:textSize="18dp"
+                android:textStyle="bold" />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/networkImage_selected_item"
+                android:background="#F43A77"
+                android:layout_width="100dp"
+                android:layout_height="@dimen/image_height_bottom_sheet"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="10dp"
+                android:src="@drawable/person" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/description_long_selected_item"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_below="@+id/details_selected_item_layout"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#000fff"
+            android:ellipsize="end"
+            android:text="Brak treści" />
+
+    </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>
