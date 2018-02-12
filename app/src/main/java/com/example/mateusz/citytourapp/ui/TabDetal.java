@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.mateusz.citytourapp.MapsActivity;
 import com.example.mateusz.citytourapp.R;
 
 /**
@@ -18,12 +19,15 @@ import com.example.mateusz.citytourapp.R;
 
 public class TabDetal extends Fragment {
 
-    //Overriden method onCreateView
+    MapsActivity activity;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        //Returning the layout file after inflating
-        //Change R.layout.tab1 in you classes
+        if ( getActivity() instanceof MapsActivity){
+            activity = (MapsActivity) getActivity();
+        }
+
         return inflater.inflate(R.layout.tab_detal, container, false);
     }
 }

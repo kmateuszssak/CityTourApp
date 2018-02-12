@@ -80,6 +80,7 @@ public class TabMap extends Fragment implements
     private NetworkImageView mNetworkImageView;
     private ImageLoader mImageLoader;
     Button checkLocalizationButton;
+    Button buttonBottomSheet;
     LinearLayout layoutBottomSheet;
     BottomSheetBehavior sheetBehavior;
 
@@ -113,6 +114,15 @@ public class TabMap extends Fragment implements
                 onClickCheckLocalizationBtn(v);
             }
         });
+
+        buttonBottomSheet = (Button) view.findViewById(R.id.button_bottom_sheet);
+        buttonBottomSheet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickBottomSheetBtn(v);
+            }
+        });
+
         titleBottomSheet = view.findViewById(R.id.title_bottom_sheet);
         descriptionBottomSheet = view.findViewById(R.id.description_bottom_sheet);
         mNetworkImageView = (NetworkImageView) view.findViewById(R.id.networkImageView);
@@ -200,6 +210,10 @@ public class TabMap extends Fragment implements
         });
     }
 
+    public void onClickBottomSheetBtn(View v) {
+
+    }
+
     private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng) {
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
@@ -256,7 +270,7 @@ public class TabMap extends Fragment implements
     }
 
     /**
-     * Klasa od Google, ale wykorzystywana również do rysowania aktualnej pozycji z BTS'a.
+     * Metoda od Google, ale wykorzystywana również do rysowania aktualnej pozycji z BTS'a.
      * @param location
      */
     @Override
