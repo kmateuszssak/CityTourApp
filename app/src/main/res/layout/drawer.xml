@@ -2,29 +2,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
-
         <item
-            android:id="@+id/zadania_id"
+            android:id="@+id/ustawienia_id"
             android:checked="false"
-            android:icon="@drawable/ic_content_paste_black"
-            android:title="@string/zadania_string" />
-
-        <item
-            android:id="@+id/Historia"
-            android:checked="false"
-            android:icon="@drawable/ic_history_black"
-            android:title="@string/historia_string" />
-
-        <item
-            android:id="@+id/Współpracownicy"
-            android:checked="false"
-            android:icon="@drawable/ic_group_black"
-            android:title="@string/wspolpracownicy_string" />
-
-        <item
-            android:id="@+id/Mapa"
-            android:checked="false"
-            android:icon="@drawable/ic_satellite_black"
-            android:title="@string/mapa_string" />
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="@string/ustawienia_string" />
     </group>
+    <item
+        android:title="Inne">
+        <menu>
+            <group
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/wyloguj_id"
+                    android:checked="false"
+                    android:icon="@drawable/ic_group_black"
+                    android:title="@string/wyloguj_string" />
+            </group>
+        </menu>
+    </item>
 </menu>

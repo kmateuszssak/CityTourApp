@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "478486983492",
+    "firebase_url": "https://citytourapp-c0d45.firebaseio.com",
+    "project_id": "citytourapp-c0d45",
+    "storage_bucket": "citytourapp-c0d45.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478486983492:android:dc8e1581d65b9373",
+        "android_client_info": {
+          "package_name": "com.example.mateusz.citytourapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478486983492-ca751pciaflre3clm04fpv8f9lnm9qcb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mateusz.citytourapp",
+            "certificate_hash": "068827f5a1c663c015db32be08361ef12bba056e"
+          }
+        },
+        {
+          "client_id": "478486983492-t2b73q3mlnje4a7kr4vas9e7au9o6tv3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaoe1fDJu0JDIRJMZrPx5Ixk21Y74NQ2Q"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478486983492-t2b73q3mlnje4a7kr4vas9e7au9o6tv3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

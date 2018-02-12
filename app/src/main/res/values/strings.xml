@@ -33,4 +33,7 @@
     <string name="edycja_gps_string">Edycja GPS</string>
     <string name="rozwiazanie_problemow_string">Rozwiązania problemów</string>
     <string name="wyloguj_string">Wyloguj</string>
+
+    <string name="twitter_consumer_key" translatable="false">o4cWmyhfSyI6AeiQEp44kZse0</string>
+    <string name="twitter_consumer_secret" translatable="false">jJpL8N4ZYG2PTNmV4qJ6BH3L5H61edCDJPa3xnaiPNCI7y2Foi</string>
 </resources>

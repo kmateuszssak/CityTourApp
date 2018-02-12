@@ -33,12 +33,21 @@
                     android:background="?attr/colorPrimary"
                     app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/tab_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPrimary"
+                    android:minHeight="?attr/actionBarSize"
+                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
             </android.support.design.widget.AppBarLayout>
 
-            <include layout="@layout/content_main" />
-
-            <!-- Adding bottom sheet after main content -->
-            <include layout="@layout/bottom_sheet" />
+            <!-- View pager to swipe views -->
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pager"
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"/>
 
         </android.support.design.widget.CoordinatorLayout>
     </FrameLayout>
@@ -48,6 +57,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="@color/colorAccent"
         app:headerLayout="@layout/navigation_header"
         app:menu="@layout/drawer" />
 </android.support.v4.widget.DrawerLayout>

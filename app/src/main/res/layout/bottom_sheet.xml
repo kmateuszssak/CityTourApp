@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="270dp"
     android:background="#fff"
     android:orientation="vertical"
     android:padding="@dimen/activity_margin"
@@ -15,7 +15,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="91dp"
+        android:layout_height="wrap_content"
         tools:layout_editor_absoluteX="10dp"
         tools:layout_editor_absoluteY="10dp">
 
@@ -55,11 +55,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/bottom_sheet_header_layout"
+            android:layout_above="@id/button_bottom_sheet"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:maxLines="5"
             android:ellipsize="end"
-            android:text="Empty" />
+            android:text="Brak treści" />
 
         <Button
             android:id="@+id/button_bottom_sheet"
