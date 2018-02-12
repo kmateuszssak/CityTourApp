@@ -189,8 +189,6 @@ public class TabMap extends Fragment implements
             @Override
             public void run() {
 
-                DataStoreClass.getGlobalTwitterHelper().tweet(activity.getApplicationContext(), "Tłit");
-
                 getMonumentsCloseToLocalization(null);
 
                 OrangeApiService orangeApiService = new OrangeApiService();
@@ -211,7 +209,7 @@ public class TabMap extends Fragment implements
     }
 
     public void onClickBottomSheetBtn(View v) {
-
+        activity.switchTab(1);
     }
 
     private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng) {

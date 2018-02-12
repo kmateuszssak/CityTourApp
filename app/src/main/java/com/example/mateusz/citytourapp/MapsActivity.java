@@ -226,4 +226,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         return true;
     }
+
+    public void switchTab(int position) {
+        tabLayout.getTabAt(position).select();
+    }
 }
