@@ -35,6 +35,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
             mIsResolving = savedInstanceState.getBoolean(KEY_IS_RESOLVING);
         }
 
+        //FirebaseApp.initializeApp(getApplicationContext());
         CredentialsOptions options = new CredentialsOptions.Builder()
                 .forceEnableSaveDialog()
                 .build();
@@ -206,8 +208,8 @@ public class MainActivity extends AppCompatActivity {
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(Arrays.asList(
-                                new AuthUI.IdpConfig.EmailBuilder().build(),
-/*                                new AuthUI.IdpConfig.PhoneBuilder().build(),
+/*                                new AuthUI.IdpConfig.EmailBuilder().build(),
+                               new AuthUI.IdpConfig.PhoneBuilder().build(),
                                 new AuthUI.IdpConfig.GoogleBuilder().build(),
                                 new AuthUI.IdpConfig.FacebookBuilder().build(),*/
                                 new AuthUI.IdpConfig.TwitterBuilder().build()))

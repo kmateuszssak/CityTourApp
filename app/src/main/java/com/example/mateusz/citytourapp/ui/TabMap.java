@@ -39,6 +39,7 @@ import com.example.mateusz.citytourapp.R;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
+import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;

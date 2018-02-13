@@ -1,80 +1,53 @@
 package com.example.mateusz.citytourapp;
 
-import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
+import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Looper;
+import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
-import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.MonumentsDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.Properties;
-import com.example.mateusz.citytourapp.Services.OrangeApiService;
-import com.example.mateusz.citytourapp.Services.PoznanApiService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
 import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
 import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
 import com.example.mateusz.citytourapp.ui.Pager;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterSession;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, NavigationView.OnNavigationItemSelectedListener {
+
+    static final int REQUEST_TAKE_PHOTO = 1888;
 
     private NavigationView navigationView;
     private DrawerLayout drawerLayout;
@@ -83,11 +56,12 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private ViewPager viewPager;
 
     /**
-     *  Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
+     * Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
      */
     private Feature selectedFeature = null;
 
     FirebaseUser user = null;
+    private StorageReference mStorageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +170,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     public void onTabSelected(TabLayout.Tab tab) {
 
         viewPager.setCurrentItem(tab.getPosition());
-        ((Pager)viewPager.getAdapter()).refreshDataOnTabDetal();
+        ((Pager) viewPager.getAdapter()).refreshDataOnTabDetal();
     }
 
     @Override
@@ -215,6 +189,9 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         String menuItemName = item.toString();
 
         switch (menuItemName) {
+            case "Zdjęcia":
+
+                break;
             case "Ustawienia":
                 // TODO ekran nowe activity, gdzie można ustawić częstość sprawdzania pozycji z BTS'a oraz zapis/odczyt tego ustawienia z chmury
                 break;
@@ -245,7 +222,74 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         selectedFeature = feature;
     }
 
-    public  Feature getSelectedFeature() {
+    public Feature getSelectedFeature() {
         return selectedFeature;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+            //mImageView.setImageBitmap(imageBitmap);
+
+            File destination = new File(Environment.getExternalStorageDirectory() + "/Pictures/",
+                    System.currentTimeMillis() + ".jpg");
+
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+
+            FileOutputStream fo;
+            try {
+                destination.createNewFile();
+                fo = new FileOutputStream(destination);
+                fo.write(bytes.toByteArray());
+                fo.close();
+
+                Toast.makeText(getApplicationContext(), "Plik zapisano", Toast.LENGTH_LONG).show();
+
+                saveInCloud(destination);
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Błędy podczas zapisu zdjęcia", Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(getApplicationContext(), "Błędy podczas zapisu zdjęcia", Toast.LENGTH_LONG).show();
+            }
+
+            //((Pager)viewPager.getAdapter()).galleryAddPic();
+        }
+    }
+
+    private void saveInCloud(File file) {
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+
+        Uri fileName = Uri.fromFile(file);
+        StorageReference riversRef = mStorageRef.child(setPhotoUriInCloud(file.getName()));
+
+        riversRef.putFile(fileName)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // Get a URL to the uploaded content
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+
+                        Toast.makeText(getApplicationContext(), "Udało zapisać się zdjęcie w chmurze", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Toast.makeText(getApplicationContext(), "Nie udało się zapisać zdjęcia w chmurze", Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    @NonNull
+    private String setPhotoUriInCloud(String fileName) {
+        return user.getUid() + "/images/" + selectedFeature.getId() + "/" + fileName;
     }
 }
