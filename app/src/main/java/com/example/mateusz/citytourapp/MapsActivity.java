@@ -36,10 +36,11 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
-import com.example.mateusz.citytourapp.Model.Feature;
+import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
-import com.example.mateusz.citytourapp.Model.MonumentsDTO;
-import com.example.mateusz.citytourapp.Model.Properties;
+import com.example.mateusz.citytourapp.Model.poznanModels.MonumentsDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.Properties;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;

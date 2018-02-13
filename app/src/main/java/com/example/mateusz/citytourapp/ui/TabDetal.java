@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.MapsActivity;
-import com.example.mateusz.citytourapp.Model.Feature;
+import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.R;
 
 /**
@@ -63,11 +63,11 @@ public class TabDetal extends Fragment {
         if(feature == null)
             return;
 
-        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
+        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.getProperties().getGrafika();
         setupNetworkImageViewSource(url);
 
-        title.setText(feature.properties.nazwa);
-        description.setText(feature.properties.opis);
+        title.setText(feature.getProperties().getNazwa());
+        description.setText(feature.getProperties().getOpis());
     }
 
     private void setupNetworkImageViewSource(String url) {

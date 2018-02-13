@@ -30,10 +30,11 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.MapsActivity;
-import com.example.mateusz.citytourapp.Model.Feature;
+import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
-import com.example.mateusz.citytourapp.Model.MonumentsDTO;
-import com.example.mateusz.citytourapp.Model.Properties;
+import com.example.mateusz.citytourapp.Model.poznanModels.MonumentsDTO;
+import com.example.mateusz.citytourapp.Model.poznanModels.Properties;
 import com.example.mateusz.citytourapp.R;
 import com.example.mateusz.citytourapp.Services.OrangeApiService;
 import com.example.mateusz.citytourapp.Services.PoznanApiService;
@@ -56,7 +57,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -70,7 +73,7 @@ public class TabMap extends Fragment implements
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener{
+        LocationListener {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
@@ -79,26 +82,27 @@ public class TabMap extends Fragment implements
     private TextView descriptionBottomSheet;
     private NetworkImageView mNetworkImageView;
     private ImageLoader mImageLoader;
-    Button checkLocalizationButton;
-    Button buttonBottomSheet;
-    LinearLayout layoutBottomSheet;
-    BottomSheetBehavior sheetBehavior;
+    private Button checkLocalizationButton;
+    private Button buttonBottomSheet;
+    private LinearLayout layoutBottomSheet;
+    private BottomSheetBehavior sheetBehavior;
 
-    MapView mapView;
-    GoogleMap mGoogleMap;
-    LocationRequest mLocationRequest;
-    GoogleApiClient mGoogleApiClient;
-    Location mLastLocation;
-    Marker mCurrLocationMarker;
-    FusedLocationProviderClient mFusedLocationClient;
+    private MapView mapView;
+    private GoogleMap mGoogleMap;
+    private LocationRequest mLocationRequest;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private Marker mCurrLocationMarker;
+    private FusedLocationProviderClient mFusedLocationClient;
 
-    MonumentsDTO monumentsDTO = null;
-    Map<Marker, Feature> markerFeatureMap = null;
+    private MonumentsDTO monumentsDTO = null;
+    private ChurchesDTO churchesDTO = null;
+    private Map<Marker, Feature> markerFeatureMap = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        if ( getActivity() instanceof MapsActivity){
+        if (getActivity() instanceof MapsActivity) {
             activity = (MapsActivity) getActivity();
         }
 
@@ -128,9 +132,6 @@ public class TabMap extends Fragment implements
         mNetworkImageView = (NetworkImageView) view.findViewById(R.id.networkImageView);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(activity);
-        //Wyświetlanie mapy jako fragment - tak było wcześniej. W content_main w związku tym wykomentowany fragment. Teraz przez MapView.
-        //SupportMapFragment mapFragment = (SupportMapFragment) activity.getFragmentManager().findFragmentById(R.id.map);
-        //mapFragment.getMapAsync(this);
 
         mapView = view.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -170,37 +171,64 @@ public class TabMap extends Fragment implements
 
             @Override
             public void run() {
-                for (Feature feature : monumentsDTO_UI.features) {
-                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.properties, poznanApiService_UI.parseGeoLocationDTOLatLng(feature.geometry)));
+                for (Feature feature : monumentsDTO_UI.getFeatures()) {
+                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 0));
                     markerFeatureMap.put(marker, feature);
                 }
             }
         });
     }
 
+    private void getChurchesCloseToLocalization(Location location) {
+        final PoznanApiService poznanApiService = new PoznanApiService();
+
+        churchesDTO = poznanApiService.getChurchesDTO();
+        markerFeatureMap = new HashMap<>();
+
+        activity.runOnUiThread(new Runnable() {
+            final ChurchesDTO churchesDTO_UI = churchesDTO;
+            final PoznanApiService poznanApiService_UI = poznanApiService;
+
+            @Override
+            public void run() {
+                for (Feature feature : churchesDTO_UI.getFeatures()) {
+                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 1));
+                    markerFeatureMap.put(marker, feature);
+                }
+            }
+        });
+    }
+
+    private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng, int t) {
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.title(properties.getNazwa());
+        markerOptions.draggable(true);
+        switch (t) {
+            case 0:
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                break;
+            case 1:
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                break;
+        }
+
+        return markerOptions;
+    }
+
     public void onClickCheckLocalizationBtn(View v) {
-
-        /*FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("message");
-
-        myRef.setValue("Hello, World!");*/
 
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
 
                 getMonumentsCloseToLocalization(null);
-
-                OrangeApiService orangeApiService = new OrangeApiService();
-                LocalizationOrangeDTO localizationOrangeDTO = orangeApiService.getGeoLocalizationOrange();
-                final Location location = orangeApiService.getGeoLocation();
+                getChurchesCloseToLocalization(null);
 
                 activity.runOnUiThread(new Runnable() {
-                    final Location locationL = location;
 
                     @Override
                     public void run() {
-                        //onLocationChanged(locationL);
                         Toast.makeText(activity.getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -210,16 +238,6 @@ public class TabMap extends Fragment implements
 
     public void onClickBottomSheetBtn(View v) {
         activity.switchTab(1);
-    }
-
-    private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng) {
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.title(properties.nazwa);
-        markerOptions.draggable(true);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-
-        return markerOptions;
     }
 
     /**
@@ -269,6 +287,7 @@ public class TabMap extends Fragment implements
 
     /**
      * Metoda od Google, ale wykorzystywana również do rysowania aktualnej pozycji z BTS'a.
+     *
      * @param location
      */
     @Override
@@ -371,17 +390,22 @@ public class TabMap extends Fragment implements
     public boolean onMarkerClick(Marker marker) {
 
         Feature feature = markerFeatureMap.get(marker);
-        activity.setSelectedFeature(feature);
 
-        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.properties.grafika;
+        if (feature == null) {
+            Toast.makeText(activity.getApplicationContext(), "Wystąpił błąd", Toast.LENGTH_SHORT).show();
+
+            return false;
+        }
+
+        final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.getProperties().getGrafika();
         setupNetworkImageViewSourceInBottomSheet(url);
 
-        titleBottomSheet.setText(feature.properties.nazwa);
-        descriptionBottomSheet.setText(feature.properties.opis);
+        titleBottomSheet.setText(feature.getProperties().getNazwa());
+        descriptionBottomSheet.setText(feature.getProperties().getOpis());
 
         synchronized (sheetBehavior) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        };
+        }
 
         return false;
     }
