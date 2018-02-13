@@ -390,6 +390,7 @@ public class TabMap extends Fragment implements
     public boolean onMarkerClick(Marker marker) {
 
         Feature feature = markerFeatureMap.get(marker);
+        activity.setSelectedFeature(feature);
 
         if (feature == null) {
             Toast.makeText(activity.getApplicationContext(), "Wystąpił błąd", Toast.LENGTH_SHORT).show();
