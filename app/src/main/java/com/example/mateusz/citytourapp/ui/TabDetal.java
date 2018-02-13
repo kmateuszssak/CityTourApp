@@ -39,11 +39,11 @@ public class TabDetal extends Fragment {
 
         View view = inflater.inflate(R.layout.tab_detal, container, false);
 
-        //title = view.findViewById(R.id.title_selected_item);
-        //description = view.findViewById(R.id.description_long_selected_item);
-        mNetworkImageView = (NetworkImageView) view.findViewById(R.id.networkImageView);
+        title = view.findViewById(R.id.title_selected_item);
+        description = view.findViewById(R.id.description_long_selected_item);
+        mNetworkImageView = (NetworkImageView) view.findViewById(R.id.networkImage_selected_item);
 
-        //setSelectedFeatureOnPage();
+        setSelectedFeatureOnPage();
 
         return view;
     }
@@ -57,7 +57,7 @@ public class TabDetal extends Fragment {
         }
     }
 
-    private void setSelectedFeatureOnPage() {
+    public void setSelectedFeatureOnPage() {
         Feature feature = activity.getSelectedFeature();
 
         if(feature == null)

@@ -16,10 +16,14 @@ public class Pager extends FragmentStatePagerAdapter {
     //integer to count number of tabs
     int tabCount;
 
+    TabMap tabMap;
+    TabDetal tabDetal;
+
     public Pager(FragmentManager fm, int tabCount) {
         super(fm);
         //Initializing tab count
-        this.tabCount= tabCount;
+        this.tabCount = tabCount;
+
     }
 
     //Overriding method getItem
@@ -28,11 +32,15 @@ public class Pager extends FragmentStatePagerAdapter {
         //Returning the current tabs
         switch (position) {
             case 0:
-                TabMap tab1 = new TabMap();
-                return tab1;
+                if (tabMap == null)
+                    tabMap = new TabMap();
+
+                return tabMap;
             case 1:
-                TabDetal tab2 = new TabDetal();
-                return tab2;
+                if (tabDetal == null)
+                    tabDetal = new TabDetal();
+
+                return tabDetal;
             default:
                 return null;
         }
@@ -42,5 +50,10 @@ public class Pager extends FragmentStatePagerAdapter {
     @Override
     public int getCount() {
         return tabCount;
+    }
+
+    public void refreshDataOnTabDetal() {
+        if (tabDetal != null)
+            tabDetal.setSelectedFeatureOnPage();
     }
 }
