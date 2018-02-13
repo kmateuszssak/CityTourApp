@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                 //zamknięcie obecnego activity z FirebaseUI - ekran logowania
                 finish();
 
-                // TODO zapisanie Credential'i
+                // TODO (opcjonalne) zapisanie Credential'i
 
                 Intent intent = new Intent(MainActivity.this, MapsActivity.class);
                 startActivity(intent);
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     private void processRetrievedCredential(Credential credential, boolean isHint) {
         Log.d(TAG, "Credential Retrieved: " + credential.getId());
 
-        //TODO Jak uda się otrzymać automatycznie credentiale to tutaj po prostu trzba się zalogować/przejść do następnego ekranu.
+        //TODO (opcjonalne) Jak uda się otrzymać automatycznie credentiale to tutaj po prostu trzeba się zalogować/przejść do następnego ekranu.
 
         // If the Credential is not a hint, we should store it an enable the delete button.
         // If it is a hint, skip this because a hint cannot be deleted.
