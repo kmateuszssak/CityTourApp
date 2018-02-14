@@ -66,8 +66,7 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
 
         aNotificationManager.notify(NOTIFICATION_ID_OPEN_ACTIVITY, aNotificationBuilder.build());
     }
-
-    //TODO uwzglednij promien ktory jest zapisany w klasie Constans!
+    
     private String getClosestAttraction()
     {
         //get Orange localization
