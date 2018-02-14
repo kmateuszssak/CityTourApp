@@ -131,8 +131,8 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
                 }
             }
 
-            //zwracamy informacje
-            if (closestFeature != null) {
+            //zwracamy informacje jesli jest i jesli miesci sie w promieniu
+            if (closestFeature != null && currentClosestDistance < Constans.PROMIEN * 1000) {
                 Log.d(TAG, "Coords ClosestFeature: " + closestFeature.getGeometry().coordinates.get(0) + " : " + closestFeature.getGeometry().coordinates.get(1));
                 Log.i(TAG, "Odleglosc najblizsza: " + currentClosestDistance);
                 String text = closestFeature.getProperties().getNazwa() + " w mieście " + closestFeature.getProperties().getMiasto();

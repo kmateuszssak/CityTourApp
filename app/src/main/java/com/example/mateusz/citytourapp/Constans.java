@@ -11,7 +11,7 @@ public class Constans {
     public static final String msisdn = "48573425009";
 
     //statyczne ustawienia wyciagane z Firebase
-    public static double PROMIEN = 10;
+    public static double PROMIEN = 350;
     public static long CZAS_ODSWIEZANIA = 120;
     public static boolean czyZabytki = true;
     public static boolean czyZabytkoweKoscioly = true;
