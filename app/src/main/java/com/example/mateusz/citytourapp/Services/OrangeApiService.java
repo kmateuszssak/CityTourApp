@@ -54,6 +54,10 @@ public class OrangeApiService {
 
     public Location parseGeoLocationDTO(LocalizationOrangeDTO localizationOrangeDTO)
     {
+        if(localizationOrangeDTO == null)
+        {
+            return null;
+        }
         String longitude1 = localizationOrangeDTO.getLongitude();
         double longitude = Double.parseDouble(longitude1.substring(0, longitude1.length() - 1));
 

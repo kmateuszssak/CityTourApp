@@ -1,68 +1,34 @@
 package com.example.mateusz.citytourapp;
 
-import android.Manifest;
-import android.content.DialogInterface;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetBehavior;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
-import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.MonumentsDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
-import com.example.mateusz.citytourapp.Model.poznanModels.Properties;
-import com.example.mateusz.citytourapp.Services.OrangeApiService;
-import com.example.mateusz.citytourapp.Services.PoznanApiService;
+import com.example.mateusz.citytourapp.scheduler.JobSchedulerService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
 import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
 import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
 import com.example.mateusz.citytourapp.ui.Pager;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -71,9 +37,6 @@ import com.google.firebase.auth.UserInfo;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterSession;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, NavigationView.OnNavigationItemSelectedListener {
 
     private NavigationView navigationView;
@@ -81,6 +44,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     private TabLayout tabLayout;
     private ViewPager viewPager;
+
+    private JobScheduler m_aScheduler = null;
 
     /**
      *  Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
@@ -146,6 +111,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setTwitterHelperSession();
 
         // TODO tutaj powinniśmy uruchomić joba który będzie sprawdzał pozycję z BTS'a.
+        scheduleBTSchecker();
     }
 
     private void setNavigationHeaderUserData(FirebaseUser user) {
@@ -234,6 +200,36 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
 
         return true;
+    }
+
+    /*
+    Schedulowanie JOBa w tle
+     */
+    public void scheduleBTSchecker(){
+        if(this.m_aScheduler == null)
+        {
+            //Tworzymy Joba, który będzie wykonywany w tle przez serwis
+            ComponentName aServiceName = new ComponentName(this, JobSchedulerService.class);
+            //TODO Dac modyfikowalny z opcji periodic time
+            JobInfo aJobInfo = new JobInfo.Builder(1, aServiceName)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    //.setPeriodic(10000)
+                    .setPersisted(true)
+                    .build();
+
+            this.m_aScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            int nResult = m_aScheduler.schedule(aJobInfo);
+            if (nResult == JobScheduler.RESULT_SUCCESS) {
+                Toast.makeText(this, "Job został schedulowany...", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else
+        {
+            this.m_aScheduler.cancelAll();
+            this.m_aScheduler = null;
+            scheduleBTSchecker();
+            Toast.makeText(this, "Job został zatrzymany...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void switchTab(int position) {
