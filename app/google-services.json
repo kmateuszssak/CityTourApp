@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "478486983492-qvlpuirt3lnq2tlpl0cl8tf1akuol1e7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mateusz.citytourapp",
+            "certificate_hash": "29492956f790750a892a977198bb1a43d96e74b1"
+          }
+        },
+        {
           "client_id": "478486983492-ca751pciaflre3clm04fpv8f9lnm9qcb.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

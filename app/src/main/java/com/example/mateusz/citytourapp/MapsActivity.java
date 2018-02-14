@@ -15,6 +15,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -46,6 +47,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private ViewPager viewPager;
 
     private JobScheduler m_aScheduler = null;
+    private boolean m_aFlagGetSettings = false;
+    private String TAG = "MAPS_ACTIVITY";
 
     /**
      *  Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
@@ -60,6 +63,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setContentView(R.layout.activity_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //TODO IMPORTANT Wywolanie pobrania rzeczy z Firebase i wgranie tych informacji do stałych w klasie "Constans"
 
         //Initializing the tablayout
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -110,7 +115,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setNavigationHeaderUserData(user);
         setTwitterHelperSession();
 
-        // TODO tutaj powinniśmy uruchomić joba który będzie sprawdzał pozycję z BTS'a.
         scheduleBTSchecker();
     }
 
@@ -182,7 +186,16 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         switch (menuItemName) {
             case "Ustawienia":
-                // TODO ekran nowe activity, gdzie można ustawić częstość sprawdzania pozycji z BTS'a oraz zapis/odczyt tego ustawienia z chmury
+                try
+                {
+                    Intent intent = new Intent(this, SettingsActivity.class);// New activity
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
                 break;
             case "Wyloguj":
                 AuthUI.getInstance()
@@ -210,17 +223,17 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         {
             //Tworzymy Joba, który będzie wykonywany w tle przez serwis
             ComponentName aServiceName = new ComponentName(this, JobSchedulerService.class);
-            //TODO Dac modyfikowalny z opcji periodic time
             JobInfo aJobInfo = new JobInfo.Builder(1, aServiceName)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                    //.setPeriodic(10000)
+                    .setPeriodic(Constans.CZAS_ODSWIEZANIA * 1000)
                     .setPersisted(true)
                     .build();
 
             this.m_aScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
             int nResult = m_aScheduler.schedule(aJobInfo);
             if (nResult == JobScheduler.RESULT_SUCCESS) {
-                Toast.makeText(this, "Job został schedulowany...", Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "Job został schedulowany...");
+                //Toast.makeText(this, "Job został schedulowany...", Toast.LENGTH_SHORT).show();
             }
         }
         else
@@ -228,7 +241,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
             this.m_aScheduler.cancelAll();
             this.m_aScheduler = null;
             scheduleBTSchecker();
-            Toast.makeText(this, "Job został zatrzymany...", Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "Job został zatrzymany...");
+            //Toast.makeText(this, "Job został zatrzymany...", Toast.LENGTH_SHORT).show();
         }
     }
 

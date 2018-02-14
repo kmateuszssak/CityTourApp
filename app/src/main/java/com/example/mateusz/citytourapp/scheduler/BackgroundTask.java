@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.example.mateusz.citytourapp.Constans;
 import com.example.mateusz.citytourapp.MapsActivity;
 import com.example.mateusz.citytourapp.Model.Geometry;
 import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
@@ -66,6 +67,7 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
         aNotificationManager.notify(NOTIFICATION_ID_OPEN_ACTIVITY, aNotificationBuilder.build());
     }
 
+    //TODO uwzglednij promien ktory jest zapisany w klasie Constans!
     private String getClosestAttraction()
     {
         //get Orange localization
@@ -80,48 +82,59 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
             Feature closestFeature = null;
             float currentClosestDistance = 999999; //duza liczba poczatkowa zeby zbijac
 
-            //TODO dodaj jakies ify zeby wyciagac tylko te zaznaczone w opcjach
-            final ChurchesDTO churchesDTO = poznanApiService.getChurchesDTO();
-            for (Feature feature : churchesDTO.getFeatures()) {
-                if (closestFeature == null) {
-                    closestFeature = feature;
-                    continue;
-                }
+            if(Constans.czyZabytkoweKoscioly)
+            {
+                final ChurchesDTO churchesDTO = poznanApiService.getChurchesDTO();
+                if(churchesDTO != null)
+                {
+                    for (Feature feature : churchesDTO.getFeatures()) {
+                        if (closestFeature == null) {
+                            closestFeature = feature;
+                            continue;
+                        }
 
-                Geometry newGeometry = feature.getGeometry();
-                Location newLocation = new Location("Nowa lokacja");
-                newLocation.setLatitude(newGeometry.getCoordinates().get(1));
-                newLocation.setLongitude(newGeometry.getCoordinates().get(0));
+                        Geometry newGeometry = feature.getGeometry();
+                        Location newLocation = new Location("Nowa lokacja");
+                        newLocation.setLatitude(newGeometry.getCoordinates().get(1));
+                        newLocation.setLongitude(newGeometry.getCoordinates().get(0));
 
-                float newClosestDistance = currentLocation.distanceTo(newLocation);
-                if (newClosestDistance < currentClosestDistance) {
-                    closestFeature = feature;
-                    currentClosestDistance = newClosestDistance;
+                        float newClosestDistance = currentLocation.distanceTo(newLocation);
+                        if (newClosestDistance < currentClosestDistance) {
+                            closestFeature = feature;
+                            currentClosestDistance = newClosestDistance;
+                        }
+                    }
                 }
             }
 
-            final MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
-            for (Feature feature : monumentsDTO.getFeatures()) {
-                if (closestFeature == null) {
-                    closestFeature = feature;
-                    continue;
-                }
+            if(Constans.czyZabytki) {
+                final MonumentsDTO monumentsDTO = poznanApiService.getMonumentsDTO();
+                if(monumentsDTO != null)
+                {
+                    for (Feature feature : monumentsDTO.getFeatures()) {
+                        if (closestFeature == null) {
+                            closestFeature = feature;
+                            continue;
+                        }
 
-                Geometry newGeometry = feature.getGeometry();
-                Location newLocation = new Location("Nowa lokacja");
-                newLocation.setLatitude(newGeometry.getCoordinates().get(1));
-                newLocation.setLongitude(newGeometry.getCoordinates().get(0));
+                        Geometry newGeometry = feature.getGeometry();
+                        Location newLocation = new Location("Nowa lokacja");
+                        newLocation.setLatitude(newGeometry.getCoordinates().get(1));
+                        newLocation.setLongitude(newGeometry.getCoordinates().get(0));
 
-                float newClosestDistance = currentLocation.distanceTo(newLocation);
-                if (newClosestDistance < currentClosestDistance) {
-                    closestFeature = feature;
-                    currentClosestDistance = newClosestDistance;
+                        float newClosestDistance = currentLocation.distanceTo(newLocation);
+                        if (newClosestDistance < currentClosestDistance) {
+                            closestFeature = feature;
+                            currentClosestDistance = newClosestDistance;
+                        }
+                    }
                 }
             }
 
             //zwracamy informacje
             if (closestFeature != null) {
                 Log.d(TAG, "Coords ClosestFeature: " + closestFeature.getGeometry().coordinates.get(0) + " : " + closestFeature.getGeometry().coordinates.get(1));
+                Log.i(TAG, "Odleglosc najblizsza: " + currentClosestDistance);
                 String text = closestFeature.getProperties().getNazwa() + " w mieście " + closestFeature.getProperties().getMiasto();
                 return text;
             } else {
