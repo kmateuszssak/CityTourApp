@@ -190,7 +190,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         switch (menuItemName) {
             case "Zdjęcia":
-
+                startActivity(new Intent(MapsActivity.this, GalleryActivity.class));
                 break;
             case "Ustawienia":
                 // TODO ekran nowe activity, gdzie można ustawić częstość sprawdzania pozycji z BTS'a oraz zapis/odczyt tego ustawienia z chmury
