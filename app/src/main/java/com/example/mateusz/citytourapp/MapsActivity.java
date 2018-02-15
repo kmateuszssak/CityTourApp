@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.ImagesSet.UploadInfo;
+import com.example.mateusz.citytourapp.Model.ModelDanych;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.scheduler.JobSchedulerService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
@@ -41,8 +42,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -72,6 +76,10 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private boolean m_aFlagGetSettings = false;
     private String TAG = "MAPS_ACTIVITY";
 
+    private ModelDanych dane = null;
+    private FirebaseAuth aAuth;
+    private FirebaseAuth.AuthStateListener aAuthListener;
+
     /**
      * Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
      */
@@ -89,7 +97,43 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //TODO IMPORTANT Wywolanie pobrania rzeczy z Firebase i wgranie tych informacji do stałych w klasie "Constans"
+        aAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance().getReference();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        
+        aAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser fbUser = firebaseAuth.getCurrentUser();
+                if(fbUser != null)
+                {
+                    Log.i("SettingsActivity", "User zalogowany do firebase");
+                }
+            }
+        };
+
+        database.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //tylko pierwsze wywolanie activity to zmieniamy stale
+                if(!m_aFlagGetSettings)
+                {
+                    dane = pobierzDane(dataSnapshot);
+                    Constans.PROMIEN = dane.getPromien();
+                    Constans.CZAS_ODSWIEZANIA = dane.getNotyfikacja();
+                    Constans.czyZabytkoweKoscioly = dane.isWyswietlaj_zabytkowe_koscioly();
+                    Constans.czyZabytki = dane.isWyswietlaj_zabytki();
+
+                    m_aFlagGetSettings = true;
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                //error with database
+                Toast.makeText(getApplicationContext(), "Error with database! Please try again.", Toast.LENGTH_LONG).show();
+            }
+        });
 
         //Initializing the tablayout
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -136,7 +180,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         actionBarDrawerToggle.syncState();
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
         //mDataReference = FirebaseDatabase.getInstance().getReference("images");
 
         setNavigationHeaderUserData(user);
@@ -356,6 +399,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         // Aktualnie nie wykorzystywane
                         UploadInfo info = new UploadInfo(name, downloadUrl);
 
+                        //TODO KOSA - czy jak w onCreate jest juz getReference() to czy trzeba tą linijke?
                         database = FirebaseDatabase.getInstance().getReference();
                         database.child(user.getUid()).push().setValue(uriInCloud);
 
@@ -388,5 +432,31 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         String key = photoDataReference.push().getKey();
         photoDataReference.child(key).setValue(info);
+    }
+
+    //Pobranie dnaych z firebase
+    private ModelDanych pobierzDane(DataSnapshot dataSnapshot) {
+        ModelDanych currentData = new ModelDanych();
+        currentData.setPromien(dataSnapshot.getValue(ModelDanych.class).getPromien());
+        currentData.setNotyfikacja(dataSnapshot.getValue(ModelDanych.class).getNotyfikacja());
+        currentData.setWyswietlaj_zabytki(dataSnapshot.getValue(ModelDanych.class).isWyswietlaj_zabytki());
+        currentData.setWyswietlaj_zabytkowe_koscioly(dataSnapshot.getValue(ModelDanych.class).isWyswietlaj_zabytkowe_koscioly());
+
+        return currentData;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.aAuth.addAuthStateListener(aAuthListener);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(aAuthListener != null)
+        {
+            aAuth.removeAuthStateListener(aAuthListener);
+        }
     }
 }

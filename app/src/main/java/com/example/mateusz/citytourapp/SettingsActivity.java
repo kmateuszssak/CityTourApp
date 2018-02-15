@@ -108,7 +108,6 @@ public class SettingsActivity extends AppCompatActivity {
         currentData.setNotyfikacja(dataSnapshot.getValue(ModelDanych.class).getNotyfikacja());
         currentData.setWyswietlaj_zabytki(dataSnapshot.getValue(ModelDanych.class).isWyswietlaj_zabytki());
         currentData.setWyswietlaj_zabytkowe_koscioly(dataSnapshot.getValue(ModelDanych.class).isWyswietlaj_zabytkowe_koscioly());
-        Toast.makeText(getApplicationContext(), "Promien: " + currentData.getPromien(), Toast.LENGTH_LONG).show();
 
         return currentData;
     }
@@ -118,7 +117,7 @@ public class SettingsActivity extends AppCompatActivity {
         CheckBox czyZabytkoweKoscioly = (CheckBox) findViewById(R.id.checkBox);
         CheckBox czyZabytki = (CheckBox) findViewById(R.id.checkBox2);
         EditText promien = (EditText) findViewById(R.id.editText2);
-        EditText notyfikacja = (EditText) findViewById(R.id.editText2);
+        EditText notyfikacja = (EditText) findViewById(R.id.editText3);
 
         double newPromien = 0;
         try{
@@ -145,6 +144,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             Toast.makeText(getApplicationContext(), "Czas notyfikacji nie jest liczbą!", Toast.LENGTH_LONG).show();
         }
 
@@ -159,6 +159,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         Constans.czyZabytki = czyZabytki.isChecked();
         Constans.czyZabytkoweKoscioly = czyZabytkoweKoscioly.isChecked();
+
+        Toast.makeText(getApplicationContext(), "Zmiany zostały zapisane!", Toast.LENGTH_LONG).show();
     }
 
     public void powrotDoMapy(View view)

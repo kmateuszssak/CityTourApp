@@ -37,7 +37,14 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... voids) {
-        openActivityNotification(this.m_aContext, getClosestAttraction());
+        if(Constans.PIERWSZA_NOTYFIKACJA)
+        {
+            openActivityNotification(this.m_aContext, getClosestAttraction());
+        }
+        else
+        {
+            Constans.PIERWSZA_NOTYFIKACJA = true;
+        }
         return "Job wykonany...";
     }
 
@@ -66,7 +73,7 @@ public class BackgroundTask extends AsyncTask<Void, Void, String> {
 
         aNotificationManager.notify(NOTIFICATION_ID_OPEN_ACTIVITY, aNotificationBuilder.build());
     }
-    
+
     private String getClosestAttraction()
     {
         //get Orange localization

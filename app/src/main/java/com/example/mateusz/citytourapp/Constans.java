@@ -15,4 +15,6 @@ public class Constans {
     public static long CZAS_ODSWIEZANIA = 120;
     public static boolean czyZabytki = true;
     public static boolean czyZabytkoweKoscioly = true;
+
+    public static boolean PIERWSZA_NOTYFIKACJA = false;
 }
