@@ -16,13 +16,13 @@ public class TwitterHelper {
 
     private TwitterSession m_aSession;
 
-    public void tweet(Context aContext, String sMessage) {
+    public void tweet(Context aContext, String sMessage, String hashTag) {
         if(this.m_aSession != null)
         {
             final Intent aIntent = new ComposerActivity.Builder(aContext)
                     .session(this.m_aSession)
                     .text(sMessage)
-                    .hashtags("#twitter")
+                    .hashtags("#" + hashTag)
                     .createIntent();
             aContext.startActivity(aIntent);
         }

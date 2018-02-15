@@ -20,7 +20,7 @@
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="50dp"/>
+        android:layout_marginBottom="45dp"/>
 
     <Button
         android:id="@+id/checkLocalizationButton"
@@ -28,6 +28,6 @@
         android:layout_height="45dp"
         android:layout_gravity="bottom"
         android:onClick="onClickCheckLocalizationBtn"
-        android:text="Check Cell Lozalization" />
+        android:text="Sprawdź dostępne miejsca" />
 
 </FrameLayout>

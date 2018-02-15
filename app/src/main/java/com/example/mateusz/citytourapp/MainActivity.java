@@ -208,14 +208,14 @@ public class MainActivity extends AppCompatActivity {
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(Arrays.asList(
-/*                                new AuthUI.IdpConfig.EmailBuilder().build(),
-                               new AuthUI.IdpConfig.PhoneBuilder().build(),
+                               new AuthUI.IdpConfig.EmailBuilder().build(), //TODO Nie można tego wykomentować, bo wtedy znika nasz piękny ekran startowy. Trzeba to zostawić, ale jednocześnie sprawdzić w MapsActivity, że FirebaseUser provaaiderID nie jest "twitter.com" i zawrócić użytkownika do ekranu początkowego.
+/*                                new AuthUI.IdpConfig.PhoneBuilder().build(),
                                 new AuthUI.IdpConfig.GoogleBuilder().build(),
                                 new AuthUI.IdpConfig.FacebookBuilder().build(),*/
                                 new AuthUI.IdpConfig.TwitterBuilder().build()))
                         .setTheme(R.style.NoActionBarTheme)
                         .setIsSmartLockEnabled(true)
-                        .setLogo(R.drawable.city_tour_app_logo)
+                        .setLogo(R.drawable.city_tour_app_logo)//TODO zmień logo na jakieś bez tła
                         .build(),
                 RC_SIGN_IN);
     }

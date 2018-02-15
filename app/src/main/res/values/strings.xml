@@ -37,4 +37,13 @@
 
     <string name="twitter_consumer_key" translatable="false">o4cWmyhfSyI6AeiQEp44kZse0</string>
     <string name="twitter_consumer_secret" translatable="false">jJpL8N4ZYG2PTNmV4qJ6BH3L5H61edCDJPa3xnaiPNCI7y2Foi</string>
+
+    <string name="search">Search</string>
+    <string name="searching_for">Searching for \"%s\" on Flickr</string>
+    <string name="search_failed">Search for \"%s\" failed, check your network connection and try again</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="list">List</string>
+    <string name="image_description">An image from the list of results for a search query</string>
+    <string name="fullscreen_description">Full screen view of an image</string>
 </resources>

@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.mateusz.citytourapp.ImagesSet.UploadInfo;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
 import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
@@ -33,7 +34,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserInfo;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.twitter.sdk.android.core.TwitterCore;
@@ -44,6 +48,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener, NavigationView.OnNavigationItemSelectedListener {
 
@@ -62,6 +68,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     FirebaseUser user = null;
     private StorageReference mStorageRef;
+    //private DatabaseReference mDataReference;
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,17 +124,22 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         actionBarDrawerToggle.syncState();
 
         user = FirebaseAuth.getInstance().getCurrentUser();
+        //mDataReference = FirebaseDatabase.getInstance().getReference("images");
+
         setNavigationHeaderUserData(user);
         setTwitterHelperSession();
+
 
         // TODO tutaj powinniśmy uruchomić joba który będzie sprawdzał pozycję z BTS'a.
     }
 
     private void setNavigationHeaderUserData(FirebaseUser user) {
         TextView textView = (TextView) navigationView.getHeaderView(0).findViewById(R.id.username);
+        TextView textViewEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.email);
         NetworkImageView imageView = (NetworkImageView) navigationView.getHeaderView(0).findViewById(R.id.profile_image);
 
         String url = user.getPhotoUrl().toString();
+        String email = null;
         for (UserInfo profile : user.getProviderData()) {
             // Id of the provider (ex: google.com)
             String providerId = profile.getProviderId();
@@ -137,15 +150,20 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
                 // Name, email address, and profile photo Url
                 String name = profile.getDisplayName();
-                String email = profile.getEmail();
+                email = profile.getEmail();
                 Uri photoUrl = profile.getPhotoUrl();
 
                 url = photoUrl.toString();
             }
         }
-        ;
 
         textView.setText(user.getDisplayName());
+        if (email == null) {
+            textViewEmail.setText("Brak adresu");
+        } else {
+            textViewEmail.setText(email);
+        }
+
         setupProfileImageInNavigationHeader(url, imageView);
     }
 
@@ -189,6 +207,9 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         String menuItemName = item.toString();
 
         switch (menuItemName) {
+            case "EkranGlowny":
+                //TODO żeby nas zabierało do spowrtem do mapy -> w drawer.xml dodać item
+                break;
             case "Zdjęcia":
                 startActivity(new Intent(MapsActivity.this, GalleryActivity.class));
                 break;
@@ -250,7 +271,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
                 Toast.makeText(getApplicationContext(), "Plik zapisano", Toast.LENGTH_LONG).show();
 
-                saveInCloud(destination);
+                saveInCloud(destination, selectedFeature.getProperties().getNazwa());
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -259,23 +280,34 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 e.printStackTrace();
                 Toast.makeText(getApplicationContext(), "Błędy podczas zapisu zdjęcia", Toast.LENGTH_LONG).show();
             }
-
-            //((Pager)viewPager.getAdapter()).galleryAddPic();
         }
     }
 
-    private void saveInCloud(File file) {
+    private void saveInCloud(File file, String featureName) {
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
         Uri fileName = Uri.fromFile(file);
-        StorageReference riversRef = mStorageRef.child(setPhotoUriInCloud(file.getName()));
+        final StorageMetadata metadata = new StorageMetadata.Builder()
+                .setCustomMetadata("featureId", selectedFeature.getId().toString())
+                .setCustomMetadata("featureName", featureName)
+                .build();
+        final String uriInCloud = setPhotoUriInCloud(file.getName());
+        final StorageReference photoRef = mStorageRef.child(uriInCloud);
 
-        riversRef.putFile(fileName)
+        photoRef.putFile(fileName)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get a URL to the uploaded content
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        String name = taskSnapshot.getMetadata().getName();
+                        String downloadUrl = taskSnapshot.getDownloadUrl().toString();
+
+                        // Aktualnie nie wykorzystywane
+                        UploadInfo info = new UploadInfo(name, downloadUrl);
+
+                        database = FirebaseDatabase.getInstance().getReference();
+                        database.child(user.getUid()).push().setValue(uriInCloud);
+
+                        photoRef.updateMetadata(metadata);
 
                         Toast.makeText(getApplicationContext(), "Udało zapisać się zdjęcie w chmurze", Toast.LENGTH_LONG).show();
                     }
@@ -291,5 +323,18 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     @NonNull
     private String setPhotoUriInCloud(String fileName) {
         return user.getUid() + "/images/" + selectedFeature.getId() + "/" + fileName;
+    }
+
+    @NonNull
+    private String getPhotoDatabaseInformation() {
+        String url = user.getUid() + "/images/" + selectedFeature.getId();
+        return url;
+    }
+
+    private void writeNewImageInfoToDB(String name, String url, DatabaseReference photoDataReference) {
+        UploadInfo info = new UploadInfo(name, url);
+
+        String key = photoDataReference.push().getKey();
+        photoDataReference.child(key).setValue(info);
     }
 }

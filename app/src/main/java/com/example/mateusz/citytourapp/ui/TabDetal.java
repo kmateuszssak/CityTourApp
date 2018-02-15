@@ -33,6 +33,8 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.MapsActivity;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.R;
+import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
+import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -112,8 +114,11 @@ public class TabDetal extends Fragment {
         }
     }
 
+    //TODO (dla Mateusza) dodaj nowy ekran na którym możesz dodawać zdjęcia i wrzucać na tweetera
     private void onComposeTweetButtonClick(View v) {
+        TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
 
+        twitterHelper.tweet(activity, "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa(),"podroze");
     }
 
     @Override
@@ -133,9 +138,12 @@ public class TabDetal extends Fragment {
 
         final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.getProperties().getGrafika();
         setupNetworkImageViewSource(url);
-
+        //Api z Poznania pobiera nie dokończone opisy.
         title.setText(feature.getProperties().getNazwa());
-        description.setText(feature.getProperties().getOpis());
+
+        String opis = feature.getProperties().getOpis();
+        opis = opis.substring(3);
+        description.setText(opis);
     }
 
     private void setupNetworkImageViewSource(String url) {

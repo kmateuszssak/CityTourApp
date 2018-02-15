@@ -200,6 +200,7 @@ public class TabMap extends Fragment implements
         });
     }
 
+    //TODO rysowanie markerów z różnymi ikonami.
     private MarkerOptions getMonumentMarker(Properties properties, LatLng latLng, int t) {
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
@@ -403,7 +404,9 @@ public class TabMap extends Fragment implements
         setupNetworkImageViewSourceInBottomSheet(url);
 
         titleBottomSheet.setText(feature.getProperties().getNazwa());
-        descriptionBottomSheet.setText(feature.getProperties().getOpis());
+        String opis = feature.getProperties().getOpis();
+        opis = opis.substring(3);
+        descriptionBottomSheet.setText(opis);
 
         synchronized (sheetBehavior) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
