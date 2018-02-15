@@ -94,13 +94,24 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         aAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
         user = FirebaseAuth.getInstance().getCurrentUser();
-        
+
+        //sprawdzanie czy twitterowy login
+        for(String provider : user.getProviders())
+        {
+            if(!provider.equals("twitter.com"))
+            {
+                startActivity(new Intent(MapsActivity.this, MainActivity.class));
+                finish();
+            }
+        }
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         aAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -366,6 +377,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
                 Toast.makeText(getApplicationContext(), "Plik zapisano", Toast.LENGTH_LONG).show();
 
+                //TODO IMPORTANT - crashuje jak selected feature jest null!
                 saveInCloud(destination, selectedFeature.getProperties().getNazwa());
 
             } catch (FileNotFoundException e) {

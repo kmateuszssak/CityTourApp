@@ -19,7 +19,6 @@ public class JobSchedulerService extends JobService {
         {
             @Override
             protected void onPostExecute(String sText){
-                Toast.makeText(getApplicationContext(), sText, Toast.LENGTH_LONG).show();
                 jobFinished(aJobParameters,false);
             }
         };

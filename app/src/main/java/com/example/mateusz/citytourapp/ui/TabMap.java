@@ -31,6 +31,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.Constans;
 import com.example.mateusz.citytourapp.MapsActivity;
+import com.example.mateusz.citytourapp.Model.Geometry;
 import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.Model.LocalizationOrangeDTO;
@@ -161,7 +162,7 @@ public class TabMap extends Fragment implements
         mNetworkImageView.setImageUrl(url, mImageLoader);
     }
 
-    private void getMonumentsCloseToLocalization(Location location) {
+    private void getMonumentsCloseToLocalization() {
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         monumentsDTO = poznanApiService.getMonumentsDTO();
@@ -174,14 +175,17 @@ public class TabMap extends Fragment implements
             @Override
             public void run() {
                 for (Feature feature : monumentsDTO_UI.getFeatures()) {
-                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 0));
-                    markerFeatureMap.put(marker, feature);
+                    if(czyWZasiegu(feature))
+                    {
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 0));
+                        markerFeatureMap.put(marker, feature);
+                    }
                 }
             }
         });
     }
 
-    private void getChurchesCloseToLocalization(Location location) {
+    private void getChurchesCloseToLocalization() {
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         churchesDTO = poznanApiService.getChurchesDTO();
@@ -194,8 +198,11 @@ public class TabMap extends Fragment implements
             @Override
             public void run() {
                 for (Feature feature : churchesDTO_UI.getFeatures()) {
-                    Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 1));
-                    markerFeatureMap.put(marker, feature);
+                    if(czyWZasiegu(feature))
+                    {
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 1));
+                        markerFeatureMap.put(marker, feature);
+                    }
                 }
             }
         });
@@ -219,20 +226,49 @@ public class TabMap extends Fragment implements
         return markerOptions;
     }
 
+    public boolean czyWZasiegu(Feature passedFeature)
+    {
+        //TODO nie chce sie tu pobrac ta lokalizacja, rzuca android.os.NetworkOnMainThreadException
+        OrangeApiService orangeAPI = new OrangeApiService();
+        Location currentLocation = orangeAPI.parseGeoLocationDTO(orangeAPI.getGeoLocalizationOrange());
+
+        if(currentLocation != null) {
+            Geometry newGeometry = passedFeature.getGeometry();
+            Location newLocation = new Location("Lokacja feature");
+            newLocation.setLatitude(newGeometry.getCoordinates().get(1));
+            newLocation.setLongitude(newGeometry.getCoordinates().get(0));
+            Log.i("ZASIEG", newGeometry.getCoordinates().get(1) + " | " + newGeometry.getCoordinates().get(0));
+            Log.d("ZASIEG", "Coords Orange API: " + currentLocation.getLongitude() + " : " + currentLocation.getLatitude());
+
+
+            float newClosestDistance = currentLocation.distanceTo(newLocation);
+            if (newClosestDistance < Constans.PROMIEN * 1000) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void onClickCheckLocalizationBtn(View v) {
 
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
 
-                //TODO wyswietlanie tylko w promieniu okreslonym w Constans!!!
-                if(Constans.czyZabytkoweKoscioly)
-                {
-                    getChurchesCloseToLocalization(null);
+                try{
+                    if(Constans.czyZabytkoweKoscioly)
+                    {
+                        getChurchesCloseToLocalization();
+                    }
+                    if(Constans.czyZabytkoweKoscioly)
+                    {
+                        getMonumentsCloseToLocalization();
+                    }
                 }
-                if(Constans.czyZabytkoweKoscioly)
+                catch (Exception e)
                 {
-                    getMonumentsCloseToLocalization(null);
+                    e.printStackTrace();
                 }
 
                 activity.runOnUiThread(new Runnable() {
