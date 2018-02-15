@@ -97,18 +97,27 @@ public class TabDetal extends Fragment {
     }
 
     private void onTakePhotoButtonClick(View v) {
-        boolean result = checkPermission(activity);
+        if (activity.getSelectedFeature() != null) {
+            boolean result = checkPermission(activity);
 
-        if (result) {
-            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
-                activity.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            if (result) {
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
+                    activity.startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                }
+            } else {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(activity, "Brak uprawnień", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         } else {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(activity, "Brak uprawnień", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, "Wybierz najpierw konkretny obiekt", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -116,9 +125,18 @@ public class TabDetal extends Fragment {
 
     //TODO (dla Mateusza) dodaj nowy ekran na którym możesz dodawać zdjęcia i wrzucać na tweetera
     private void onComposeTweetButtonClick(View v) {
-        TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
+        if (activity.getSelectedFeature() != null) {
+            TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
 
-        twitterHelper.tweet(activity, "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa(),"podroze");
+            twitterHelper.tweet(activity, "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa(), "podroze");
+        } else {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity, "Wybierz najpierw konkretny obiekt", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -133,8 +151,13 @@ public class TabDetal extends Fragment {
     public void setSelectedFeatureOnPage() {
         Feature feature = activity.getSelectedFeature();
 
-        if (feature == null)
+        if (feature == null) {
+            mNetworkImageView.setImageResource(android.R.color.transparent);
+            //Api z Poznania pobiera nie dokończone opisy.
+            title.setText("Wybierz najpierw miejsce na mapie");
+            description.setText("");
             return;
+        }
 
         final String url = "http://www.poznan.pl/mim/upload/obiekty/" + feature.getProperties().getGrafika();
         setupNetworkImageViewSource(url);

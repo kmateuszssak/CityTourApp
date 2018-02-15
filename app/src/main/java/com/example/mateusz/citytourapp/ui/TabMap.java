@@ -59,6 +59,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlay;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -149,6 +150,8 @@ public class TabMap extends Fragment implements
 
         mapView.getMapAsync(this);
 
+        markerFeatureMap = new HashMap<>();
+
         return view;
     }
 
@@ -166,46 +169,50 @@ public class TabMap extends Fragment implements
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         monumentsDTO = poznanApiService.getMonumentsDTO();
-        markerFeatureMap = new HashMap<>();
 
-        activity.runOnUiThread(new Runnable() {
-            final MonumentsDTO monumentsDTO_UI = monumentsDTO;
-            final PoznanApiService poznanApiService_UI = poznanApiService;
+        final MonumentsDTO monumentsDTO_UI = monumentsDTO;
+        final PoznanApiService poznanApiService_UI = poznanApiService;
 
-            @Override
-            public void run() {
-                for (Feature feature : monumentsDTO_UI.getFeatures()) {
-                    if(czyWZasiegu(feature))
-                    {
-                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 0));
-                        markerFeatureMap.put(marker, feature);
+        for (Feature feature : monumentsDTO_UI.getFeatures()) {
+            final Feature feature1 = feature;
+            if(czyWZasiegu(feature1))
+            {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (mGoogleMap) {
+                            Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 0));
+                            markerFeatureMap.put(marker, feature1);
+                        }
                     }
-                }
+                });
             }
-        });
+        }
     }
 
     private void getChurchesCloseToLocalization() {
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         churchesDTO = poznanApiService.getChurchesDTO();
-        markerFeatureMap = new HashMap<>();
 
-        activity.runOnUiThread(new Runnable() {
-            final ChurchesDTO churchesDTO_UI = churchesDTO;
-            final PoznanApiService poznanApiService_UI = poznanApiService;
+        final ChurchesDTO churchesDTO_UI = churchesDTO;
+        final PoznanApiService poznanApiService_UI = poznanApiService;
 
-            @Override
-            public void run() {
-                for (Feature feature : churchesDTO_UI.getFeatures()) {
-                    if(czyWZasiegu(feature))
-                    {
-                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature.getGeometry()), 1));
-                        markerFeatureMap.put(marker, feature);
+        for (Feature feature : churchesDTO_UI.getFeatures()) {
+            final Feature feature1 = feature;
+            if(czyWZasiegu(feature1))
+            {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (mGoogleMap) {
+                            Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 1));
+                            markerFeatureMap.put(marker, feature1);
+                        }
                     }
-                }
+                });
             }
-        });
+        }
     }
 
     //TODO rysowanie markerów z różnymi ikonami.
@@ -228,7 +235,6 @@ public class TabMap extends Fragment implements
 
     public boolean czyWZasiegu(Feature passedFeature)
     {
-        //TODO nie chce sie tu pobrac ta lokalizacja, rzuca android.os.NetworkOnMainThreadException
         OrangeApiService orangeAPI = new OrangeApiService();
         Location currentLocation = orangeAPI.parseGeoLocationDTO(orangeAPI.getGeoLocalizationOrange());
 
@@ -252,6 +258,13 @@ public class TabMap extends Fragment implements
 
     public void onClickCheckLocalizationBtn(View v) {
 
+        Toast.makeText(getContext(), "Rozpoczęto pobieranie.", Toast.LENGTH_LONG).show();
+
+        markerFeatureMap = new HashMap<>();
+        if (mGoogleMap != null) {
+            mGoogleMap.clear();
+        }
+
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -260,24 +273,30 @@ public class TabMap extends Fragment implements
                     if(Constans.czyZabytkoweKoscioly)
                     {
                         getChurchesCloseToLocalization();
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(activity.getApplicationContext(), "Pobrano kościoły", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                     if(Constans.czyZabytkoweKoscioly)
                     {
                         getMonumentsCloseToLocalization();
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(activity.getApplicationContext(), "Pobrano zabytyki", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
+
+
                 }
                 catch (Exception e)
                 {
                     e.printStackTrace();
                 }
-
-                activity.runOnUiThread(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Toast.makeText(activity.getApplicationContext(), "Location update", Toast.LENGTH_SHORT).show();
-                    }
-                });
             }
         });
     }
@@ -464,6 +483,7 @@ public class TabMap extends Fragment implements
         synchronized (sheetBehavior) {
             sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
+        activity.setSelectedFeature(null);
     }
 
     @Override

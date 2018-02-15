@@ -4,6 +4,7 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -104,8 +106,17 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         {
             if(!provider.equals("twitter.com"))
             {
-                startActivity(new Intent(MapsActivity.this, MainActivity.class));
-                finish();
+                new AlertDialog.Builder(this)
+                        .setTitle("Wymagane jest połączenie z kontem Twitter")
+                        .setMessage("Brak konta Twiiter uniemożliwi pracę z aplikacją.")
+                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Log.d("MainActivity", "Uzytkownik wcisnął okej.");
+                                //TODO automatyczne wylokowywanie
+                            }
+                        })
+                        .show();
             }
         }
 
@@ -204,33 +215,40 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         TextView textViewEmail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.email);
         NetworkImageView imageView = (NetworkImageView) navigationView.getHeaderView(0).findViewById(R.id.profile_image);
 
-        String url = user.getPhotoUrl().toString();
-        String email = null;
-        for (UserInfo profile : user.getProviderData()) {
-            // Id of the provider (ex: google.com)
-            String providerId = profile.getProviderId();
-
-            if (providerId.compareTo("twitter.com") == 0) {
-                // UID specific to the provider
-                String uid = profile.getUid();
-
-                // Name, email address, and profile photo Url
-                String name = profile.getDisplayName();
-                email = profile.getEmail();
-                Uri photoUrl = profile.getPhotoUrl();
-
-                url = photoUrl.toString();
+        if (user != null) {
+            Uri uri = user.getPhotoUrl();
+            String url = "";
+            if (uri != null) {
+                url = uri.toString();
             }
-        }
 
-        textView.setText(user.getDisplayName());
-        if (email == null) {
-            textViewEmail.setText("Brak adresu");
-        } else {
-            textViewEmail.setText(email);
-        }
+            String email = null;
+            for (UserInfo profile : user.getProviderData()) {
+                // Id of the provider (ex: google.com)
+                String providerId = profile.getProviderId();
 
-        setupProfileImageInNavigationHeader(url, imageView);
+                if (providerId.compareTo("twitter.com") == 0) {
+                    // UID specific to the provider
+                    String uid = profile.getUid();
+
+                    // Name, email address, and profile photo Url
+                    String name = profile.getDisplayName();
+                    email = profile.getEmail();
+                    Uri photoUrl = profile.getPhotoUrl();
+
+                    url = photoUrl.toString();
+                }
+            }
+
+            textView.setText(user.getDisplayName());
+            if (email == null) {
+                textViewEmail.setText("Brak adresu");
+            } else {
+                textViewEmail.setText(email);
+            }
+
+            setupProfileImageInNavigationHeader(url, imageView);
+        }
     }
 
     @NonNull
@@ -377,7 +395,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
                 Toast.makeText(getApplicationContext(), "Plik zapisano", Toast.LENGTH_LONG).show();
 
-                //TODO IMPORTANT - crashuje jak selected feature jest null!
                 saveInCloud(destination, selectedFeature.getProperties().getNazwa());
 
             } catch (FileNotFoundException e) {
@@ -411,8 +428,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         // Aktualnie nie wykorzystywane
                         UploadInfo info = new UploadInfo(name, downloadUrl);
 
-                        //TODO KOSA - czy jak w onCreate jest juz getReference() to czy trzeba tą linijke?
-                        database = FirebaseDatabase.getInstance().getReference();
                         database.child(user.getUid()).push().setValue(uriInCloud);
 
                         photoRef.updateMetadata(metadata);
