@@ -3,7 +3,8 @@
     <string name="com.twitter.sdk.android.CONSUMER_SECRET">LnwkYwPdKmmNPzkOS1ZuqDdamH0wRVGKTDdEfmhXsDToBfNIth</string>
     <string name="app_name">CityTourApp</string>
     <string name="title_activity_mateusz">MateuszActivity</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">TweeTourist</string>
+    <string name="title_activity_settings">Ustawienia</string>
 
 
     <string name="title_activity_login">Logowanie</string>

@@ -1,11 +1,16 @@
 package com.example.mateusz.citytourapp;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -22,6 +27,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.example.mateusz.citytourapp.ImagesSet.UploadInfo;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
+import com.example.mateusz.citytourapp.scheduler.JobSchedulerService;
 import com.example.mateusz.citytourapp.tweeter.DataStoreClass;
 import com.example.mateusz.citytourapp.tweeter.TwitterHelper;
 import com.example.mateusz.citytourapp.ui.CustomVolleyRequestQueue;
@@ -61,6 +67,10 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private TabLayout tabLayout;
     private ViewPager viewPager;
 
+    private JobScheduler m_aScheduler = null;
+    private boolean m_aFlagGetSettings = false;
+    private String TAG = "MAPS_ACTIVITY";
+
     /**
      * Wybrane miejsce przez użytkownika - główny kontekst aplikacji.
      */
@@ -77,6 +87,8 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setContentView(R.layout.activity_maps);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //TODO IMPORTANT Wywolanie pobrania rzeczy z Firebase i wgranie tych informacji do stałych w klasie "Constans"
 
         //Initializing the tablayout
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -129,8 +141,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         setNavigationHeaderUserData(user);
         setTwitterHelperSession();
 
-
-        // TODO tutaj powinniśmy uruchomić joba który będzie sprawdzał pozycję z BTS'a.
+        scheduleBTSchecker();
     }
 
     private void setNavigationHeaderUserData(FirebaseUser user) {
@@ -214,7 +225,16 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 startActivity(new Intent(MapsActivity.this, GalleryActivity.class));
                 break;
             case "Ustawienia":
-                // TODO ekran nowe activity, gdzie można ustawić częstość sprawdzania pozycji z BTS'a oraz zapis/odczyt tego ustawienia z chmury
+                try
+                {
+                    Intent intent = new Intent(this, SettingsActivity.class);// New activity
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
                 break;
             case "Wyloguj":
                 AuthUI.getInstance()
@@ -232,6 +252,37 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
         }
 
         return true;
+    }
+
+    /*
+    Schedulowanie JOBa w tle
+     */
+    public void scheduleBTSchecker(){
+        if(this.m_aScheduler == null)
+        {
+            //Tworzymy Joba, który będzie wykonywany w tle przez serwis
+            ComponentName aServiceName = new ComponentName(this, JobSchedulerService.class);
+            JobInfo aJobInfo = new JobInfo.Builder(1, aServiceName)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .setPeriodic(Constans.CZAS_ODSWIEZANIA * 1000)
+                    .setPersisted(true)
+                    .build();
+
+            this.m_aScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            int nResult = m_aScheduler.schedule(aJobInfo);
+            if (nResult == JobScheduler.RESULT_SUCCESS) {
+                Log.i(TAG, "Job został schedulowany...");
+                //Toast.makeText(this, "Job został schedulowany...", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else
+        {
+            this.m_aScheduler.cancelAll();
+            this.m_aScheduler = null;
+            scheduleBTSchecker();
+            Log.i(TAG, "Job został zatrzymany...");
+            //Toast.makeText(this, "Job został zatrzymany...", Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void switchTab(int position) {

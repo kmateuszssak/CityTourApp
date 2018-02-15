@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.mateusz.citytourapp.Constans;
 import com.example.mateusz.citytourapp.MapsActivity;
 import com.example.mateusz.citytourapp.Model.poznanModels.ChurchesDTO;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
@@ -211,7 +212,7 @@ public class TabMap extends Fragment implements
                 markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
                 break;
             case 1:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                 break;
         }
 
@@ -224,8 +225,15 @@ public class TabMap extends Fragment implements
             @Override
             public void run() {
 
-                getMonumentsCloseToLocalization(null);
-                getChurchesCloseToLocalization(null);
+                //TODO wyswietlanie tylko w promieniu okreslonym w Constans!!!
+                if(Constans.czyZabytkoweKoscioly)
+                {
+                    getChurchesCloseToLocalization(null);
+                }
+                if(Constans.czyZabytkoweKoscioly)
+                {
+                    getMonumentsCloseToLocalization(null);
+                }
 
                 activity.runOnUiThread(new Runnable() {
 
