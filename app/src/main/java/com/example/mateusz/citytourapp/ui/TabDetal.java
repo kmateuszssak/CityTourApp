@@ -30,6 +30,8 @@ import android.widget.Toast;
 
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
+import com.example.mateusz.citytourapp.ComposeTweetActivity;
+import com.example.mateusz.citytourapp.GalleryActivity;
 import com.example.mateusz.citytourapp.MapsActivity;
 import com.example.mateusz.citytourapp.Model.poznanModels.Feature;
 import com.example.mateusz.citytourapp.R;
@@ -126,9 +128,13 @@ public class TabDetal extends Fragment {
     //TODO (dla Mateusza) dodaj nowy ekran na którym możesz dodawać zdjęcia i wrzucać na tweetera
     private void onComposeTweetButtonClick(View v) {
         if (activity.getSelectedFeature() != null) {
-            TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
 
-            twitterHelper.tweet(activity, "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa(), "podroze");
+            Intent intent = new Intent(activity, ComposeTweetActivity.class);
+            intent.putExtra("TweetMessage", "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa());
+            startActivity(intent);
+            /*TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
+
+            twitterHelper.tweet(activity, "Byłem dzisiaj w " + activity.getSelectedFeature().getProperties().getNazwa(), "podroze");*/
         } else {
             activity.runOnUiThread(new Runnable() {
                 @Override

@@ -428,9 +428,15 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         // Aktualnie nie wykorzystywane
                         UploadInfo info = new UploadInfo(name, downloadUrl);
 
+                        //TODO KOSA - czy jak w onCreate jest juz getReference() to czy trzeba tą linijke?
                         database.child(user.getUid()).push().setValue(uriInCloud);
 
                         photoRef.updateMetadata(metadata);
+                        StorageMetadata metadata2 = new StorageMetadata.Builder()
+                                .setCustomMetadata("url", downloadUrl)
+                                .build();
+
+                        photoRef.updateMetadata(metadata2);
 
                         Toast.makeText(getApplicationContext(), "Udało zapisać się zdjęcie w chmurze", Toast.LENGTH_LONG).show();
                     }
