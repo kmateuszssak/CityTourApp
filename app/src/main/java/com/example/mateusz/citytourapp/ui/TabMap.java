@@ -55,6 +55,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -166,6 +167,9 @@ public class TabMap extends Fragment implements
     }
 
     private void getMonumentsCloseToLocalization() {
+        OrangeApiService orangeAPI = new OrangeApiService();
+        Location currentLocation = orangeAPI.parseGeoLocationDTO(orangeAPI.getGeoLocalizationOrange());
+
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         monumentsDTO = poznanApiService.getMonumentsDTO();
@@ -173,24 +177,35 @@ public class TabMap extends Fragment implements
         final MonumentsDTO monumentsDTO_UI = monumentsDTO;
         final PoznanApiService poznanApiService_UI = poznanApiService;
 
-        for (Feature feature : monumentsDTO_UI.getFeatures()) {
-            final Feature feature1 = feature;
-            if(czyWZasiegu(feature1))
+        List<Feature> odfiltrowaneFeatures = new ArrayList<Feature>();
+        for (Feature feature : monumentsDTO_UI.getFeatures())
+        {
+            if(czyWZasiegu(feature, currentLocation))
             {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (mGoogleMap) {
-                            Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 0));
-                            markerFeatureMap.put(marker, feature1);
-                        }
-                    }
-                });
+                odfiltrowaneFeatures.add(feature);
             }
         }
+        final List<Feature> poofiltrowaniuFeatures = odfiltrowaneFeatures;
+
+        activity.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (mGoogleMap) {
+                    for (Feature feat : poofiltrowaniuFeatures) {
+                        final Feature feature1 = feat;
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 1));
+                        markerFeatureMap.put(marker, feature1);
+                    }
+                }
+            }
+        });
     }
 
     private void getChurchesCloseToLocalization() {
+        OrangeApiService orangeAPI = new OrangeApiService();
+        Location currentLocation = orangeAPI.parseGeoLocationDTO(orangeAPI.getGeoLocalizationOrange());
+
         final PoznanApiService poznanApiService = new PoznanApiService();
 
         churchesDTO = poznanApiService.getChurchesDTO();
@@ -198,21 +213,29 @@ public class TabMap extends Fragment implements
         final ChurchesDTO churchesDTO_UI = churchesDTO;
         final PoznanApiService poznanApiService_UI = poznanApiService;
 
-        for (Feature feature : churchesDTO_UI.getFeatures()) {
-            final Feature feature1 = feature;
-            if(czyWZasiegu(feature1))
+        List<Feature> odfiltrowaneFeatures = new ArrayList<Feature>();
+        for (Feature feature : churchesDTO_UI.getFeatures())
+        {
+            if(czyWZasiegu(feature, currentLocation))
             {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        synchronized (mGoogleMap) {
-                            Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 1));
-                            markerFeatureMap.put(marker, feature1);
-                        }
-                    }
-                });
+                odfiltrowaneFeatures.add(feature);
             }
         }
+        final List<Feature> poofiltrowaniuFeatures = odfiltrowaneFeatures;
+
+        activity.runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (mGoogleMap) {
+                    for (Feature feat : poofiltrowaniuFeatures) {
+                        final Feature feature1 = feat;
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 0));
+                        markerFeatureMap.put(marker, feature1);
+                    }
+                }
+            }
+        });
     }
 
     //TODO rysowanie markerów z różnymi ikonami.
@@ -221,23 +244,24 @@ public class TabMap extends Fragment implements
         markerOptions.position(latLng);
         markerOptions.title(properties.getNazwa());
         markerOptions.draggable(true);
+
+        BitmapDescriptor icon;
         switch (t) {
             case 0:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.church);
+                markerOptions.icon(icon);
                 break;
             case 1:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.history);
+                markerOptions.icon(icon);
                 break;
         }
 
         return markerOptions;
     }
 
-    public boolean czyWZasiegu(Feature passedFeature)
+    public boolean czyWZasiegu(Feature passedFeature, Location currentLocation)
     {
-        OrangeApiService orangeAPI = new OrangeApiService();
-        Location currentLocation = orangeAPI.parseGeoLocationDTO(orangeAPI.getGeoLocalizationOrange());
-
         if(currentLocation != null) {
             Geometry newGeometry = passedFeature.getGeometry();
             Location newLocation = new Location("Lokacja feature");

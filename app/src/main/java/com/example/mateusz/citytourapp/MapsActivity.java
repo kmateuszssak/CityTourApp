@@ -146,6 +146,9 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
                     Constans.czyZabytkoweKoscioly = dane.isWyswietlaj_zabytkowe_koscioly();
                     Constans.czyZabytki = dane.isWyswietlaj_zabytki();
 
+                    //dopiero po pobraniu ustawien ustawiamy scheduler
+                    scheduleBTSchecker();
+
                     m_aFlagGetSettings = true;
                 }
             }
@@ -206,8 +209,6 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
         setNavigationHeaderUserData(user);
         setTwitterHelperSession();
-
-        scheduleBTSchecker();
     }
 
     private void setNavigationHeaderUserData(FirebaseUser user) {
@@ -345,7 +346,7 @@ public class MapsActivity extends AppCompatActivity implements TabLayout.OnTabSe
             int nResult = m_aScheduler.schedule(aJobInfo);
             if (nResult == JobScheduler.RESULT_SUCCESS) {
                 Log.i(TAG, "Job został schedulowany...");
-                //Toast.makeText(this, "Job został schedulowany...", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "Job został schedulowany... " + (Constans.CZAS_ODSWIEZANIA * 1000), Toast.LENGTH_SHORT).show();
             }
         }
         else
