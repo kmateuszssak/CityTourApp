@@ -19,9 +19,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 
 public class ComposeTweetActivity extends AppCompatActivity {
 
@@ -79,6 +82,7 @@ public class ComposeTweetActivity extends AppCompatActivity {
 
     private String selectedImageUrl = null;
     private Uri selectedImageURI = null;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -89,12 +93,36 @@ public class ComposeTweetActivity extends AppCompatActivity {
             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
             StorageReference reference = storageReference.child(result);
 
-            reference.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
+            File localFile = null;
+
+            try {
+                localFile = File.createTempFile("images", "jpg");
+                reference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle any errors
+                    }
+                });
+            } catch (Exception ex) {
+
+            }
+
+            if (localFile != null) {
+                selectedImageUrl = localFile.getAbsolutePath();
+            }
+
+
+            /*reference.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
                 @Override
                 public void onSuccess(StorageMetadata storageMetadata) {
                     String url = storageMetadata.getCustomMetadata("url");
 
-                    selectedImageUrl = url;
+                    selectedImageUrl = url;//TODO jak to podam to mi się wyświetla zdjęcie, ale wywala jak chcę wysłać
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -113,7 +141,7 @@ public class ComposeTweetActivity extends AppCompatActivity {
                 public void onFailure(@NonNull Exception exception) {
                     // Handle any errors
                 }
-            });
+            });*/
 
             Glide.with(this.getApplicationContext())
                     .load(reference)
@@ -121,15 +149,22 @@ public class ComposeTweetActivity extends AppCompatActivity {
 
             imageView.setVisibility(ImageView.VISIBLE);
         }
-        selectedImageUrl = null;
-        selectedImageURI = null;
+        //selectedImageUrl = null;
+        //selectedImageURI = null;
     }
 
     private void sendTweet() {
         TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
 
-        twitterHelper.tweet(this, editText.getText().toString(), "podroze", /*selectedImageUrl*/selectedImageURI);
+        twitterHelper.tweet(this, editText.getText().toString(), "podroze", selectedImageUrl);
 
-        Toast.makeText(getApplicationContext(), "Tweet wysłany", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Tweet wysłany", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
     }
 }
