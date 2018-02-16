@@ -55,6 +55,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -193,7 +194,7 @@ public class TabMap extends Fragment implements
                 synchronized (mGoogleMap) {
                     for (Feature feat : poofiltrowaniuFeatures) {
                         final Feature feature1 = feat;
-                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 0));
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 1));
                         markerFeatureMap.put(marker, feature1);
                     }
                 }
@@ -229,7 +230,7 @@ public class TabMap extends Fragment implements
                 synchronized (mGoogleMap) {
                     for (Feature feat : poofiltrowaniuFeatures) {
                         final Feature feature1 = feat;
-                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 1));
+                        Marker marker = mGoogleMap.addMarker(getMonumentMarker(feature1.getProperties(), poznanApiService_UI.parseGeoLocationDTOLatLng(feature1.getGeometry()), 0));
                         markerFeatureMap.put(marker, feature1);
                     }
                 }
@@ -243,12 +244,16 @@ public class TabMap extends Fragment implements
         markerOptions.position(latLng);
         markerOptions.title(properties.getNazwa());
         markerOptions.draggable(true);
+
+        BitmapDescriptor icon;
         switch (t) {
             case 0:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.church);
+                markerOptions.icon(icon);
                 break;
             case 1:
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.history);
+                markerOptions.icon(icon);
                 break;
         }
 
