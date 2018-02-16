@@ -2,7 +2,9 @@ package com.example.mateusz.citytourapp;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -82,6 +84,7 @@ public class ComposeTweetActivity extends AppCompatActivity {
 
     private String selectedImageUrl = null;
     private Uri selectedImageURI = null;
+    Uri imageUri = null;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -96,7 +99,7 @@ public class ComposeTweetActivity extends AppCompatActivity {
             File localFile = null;
 
             try {
-                localFile = File.createTempFile("images", "jpg");
+                localFile =  new File(Environment.getExternalStorageDirectory() + File.separator + "image.jpg");
                 reference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
@@ -114,6 +117,11 @@ public class ComposeTweetActivity extends AppCompatActivity {
 
             if (localFile != null) {
                 selectedImageUrl = localFile.getAbsolutePath();
+
+                /*imageUri = FileProvider.getUriForFile(ComposeTweetActivity.this,
+                        BuildConfig.APPLICATION_ID + ".file_provider",
+                        localFile);*/
+                imageUri = Uri.fromFile(localFile);
             }
 
 
@@ -156,7 +164,7 @@ public class ComposeTweetActivity extends AppCompatActivity {
     private void sendTweet() {
         TwitterHelper twitterHelper = DataStoreClass.getGlobalTwitterHelper();
 
-        twitterHelper.tweet(this, editText.getText().toString(), "podroze", selectedImageUrl);
+        twitterHelper.tweet(this, editText.getText().toString(), "podroze", imageUri);
 
         Toast.makeText(getApplicationContext(), "Tweet wysłany", Toast.LENGTH_LONG).show();
     }
